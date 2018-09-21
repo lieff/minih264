@@ -1514,7 +1514,7 @@ const uint8_t g_diff_to_gainQ8[256] =
 #define SWAP32(x) (uint32_t)((((x) >> 24) & 0xFF) | (((x) >> 8) & 0xFF00) | (((x) << 8) & 0xFF0000) | ((x & 0xFF) << 24))
 #define BS_BITS 32
 
-void h264e_bs_put_bits_sse2(bs_t *bs, unsigned n, unsigned val)
+static void h264e_bs_put_bits_sse2(bs_t *bs, unsigned n, unsigned val)
 {
     assert(!(val >> n));
     bs->shift -= n;
@@ -1530,12 +1530,12 @@ void h264e_bs_put_bits_sse2(bs_t *bs, unsigned n, unsigned val)
     bs->cache |= val << bs->shift;
 }
 
-void h264e_bs_flush_sse2(bs_t *bs)
+static void h264e_bs_flush_sse2(bs_t *bs)
 {
     *bs->buf = SWAP32(bs->cache);
 }
 
-unsigned h264e_bs_get_pos_bits_sse2(const bs_t *bs)
+static unsigned h264e_bs_get_pos_bits_sse2(const bs_t *bs)
 {
     unsigned pos_bits = (unsigned)((bs->buf - bs->origin)*BS_BITS);
     pos_bits += BS_BITS - bs->shift;
@@ -1543,7 +1543,7 @@ unsigned h264e_bs_get_pos_bits_sse2(const bs_t *bs)
     return pos_bits;
 }
 
-unsigned h264e_bs_byte_align_sse2(bs_t *bs)
+static unsigned h264e_bs_byte_align_sse2(bs_t *bs)
 {
     int pos = h264e_bs_get_pos_bits_sse2(bs);
     h264e_bs_put_bits_sse2(bs, -pos & 7, 0);
@@ -1564,7 +1564,7 @@ unsigned h264e_bs_byte_align_sse2(bs_t *bs)
 *   [7..14] => 0001xxx
 *
 */
-void h264e_bs_put_golomb_sse2(bs_t * bs, unsigned val)
+static void h264e_bs_put_golomb_sse2(bs_t *bs, unsigned val)
 {
     int size;
 #if defined(_MSC_VER)
@@ -1587,14 +1587,14 @@ void h264e_bs_put_golomb_sse2(bs_t * bs, unsigned val)
 *       3 => 5
 *      -3 => 6
 */
-void h264e_bs_put_sgolomb_sse2(bs_t *bs, int val)
+static void h264e_bs_put_sgolomb_sse2(bs_t *bs, int val)
 {
     val = 2*val - 1;
     val ^= val >> 31;
     h264e_bs_put_golomb_sse2(bs, val);
 }
 
-void h264e_bs_init_bits_sse2(bs_t *bs, void *data)
+static void h264e_bs_init_bits_sse2(bs_t *bs, void *data)
 {
     bs->origin = data;
     bs->buf = bs->origin;
@@ -1616,16 +1616,16 @@ cache |= val << shift;
 
 static unsigned __clz_cavlc(unsigned v)
 {
-  #if defined(_MSC_VER)
+#if defined(_MSC_VER)
     unsigned long nbit;
     _BitScanReverse(&nbit, v);
     return 31 - nbit;
-  #else
+#else
     return __builtin_clz(v);
-  #endif
+#endif
 }
 
-void h264e_vlc_encode_sse2(bs_t *bs, int16_t *quant, int maxNumCoeff, uint8_t *nz_ctx)
+static void h264e_vlc_encode_sse2(bs_t *bs, int16_t *quant, int maxNumCoeff, uint8_t *nz_ctx)
 {
     int nnz_context, nlevels, nnz; // nnz = nlevels + trailing_ones
     unsigned trailing_ones = 0;
@@ -2159,7 +2159,7 @@ static void deblock_luma_v_s3_sse(uint8_t *pix, int stride, int alpha, int beta,
     } while(--cloop);
 }
 
-void h264e_deblock_chroma_sse2(uint8_t *pix, int32_t stride, const deblock_params_t *par)
+static void h264e_deblock_chroma_sse2(uint8_t *pix, int32_t stride, const deblock_params_t *par)
 {
     const uint8_t *alpha = par->alpha;
     const uint8_t *beta = par->beta;
@@ -2195,7 +2195,7 @@ void h264e_deblock_chroma_sse2(uint8_t *pix, int32_t stride, const deblock_param
     }
 }
 
-void h264e_deblock_luma_sse2(uint8_t *pix, int32_t stride, const deblock_params_t *par)
+static void h264e_deblock_luma_sse2(uint8_t *pix, int32_t stride, const deblock_params_t *par)
 {
     const uint8_t *alpha = par->alpha;
     const uint8_t *beta = par->beta;
@@ -2237,7 +2237,7 @@ void h264e_deblock_luma_sse2(uint8_t *pix, int32_t stride, const deblock_params_
     }
 }
 
-void h264e_denoise_run_sse2(unsigned char *frm, unsigned char *frmprev, int w, int h_arg, int stride_frm, int stride_frmprev)
+static void h264e_denoise_run_sse2(unsigned char *frm, unsigned char *frmprev, int w, int h_arg, int stride_frm, int stride_frmprev)
 {
 #define MM_LOAD_8TO16(p) _mm_unpacklo_epi8(_mm_loadl_epi64((__m128i*)(p)), zero)
     int cloop, h = h_arg;
@@ -2459,7 +2459,7 @@ static uint32_t intra_predict_dc_sse(const pix_t *left, const pix_t *top, int lo
 #define L2 edge[-4]
 #define L3 edge[-5]
 
-void h264e_intra_predict_16x16_sse2(pix_t *predict,  const pix_t *left, const pix_t *top, int mode)
+static void h264e_intra_predict_16x16_sse2(pix_t *predict,  const pix_t *left, const pix_t *top, int mode)
 {
     int cloop = 16;
     if (mode < 1)
@@ -2491,7 +2491,7 @@ void h264e_intra_predict_16x16_sse2(pix_t *predict,  const pix_t *left, const pi
     }
 }
 
-void h264e_intra_predict_chroma_sse2(pix_t *predict, const pix_t *left, const pix_t *top, int mode)
+static void h264e_intra_predict_chroma_sse2(pix_t *predict, const pix_t *left, const pix_t *top, int mode)
 {
     int cloop = 8;
     if (mode < 1)
@@ -2546,7 +2546,7 @@ void h264e_intra_predict_chroma_sse2(pix_t *predict, const pix_t *left, const pi
     }
 }
 
-int h264e_intra_choose_4x4_sse2(const pix_t *blockin, pix_t *blockpred, int avail, const pix_t *edge, int mpred, int penalty)
+static int h264e_intra_choose_4x4_sse2(const pix_t *blockin, pix_t *blockpred, int avail, const pix_t *edge, int mpred, int penalty)
 {
     int best_m = 0;
     int sad, best_sad = 0x10000;
@@ -2974,7 +2974,7 @@ static void average_16x16_unalign_sse(uint8_t *dst, const uint8_t *src, int src_
     _mm_store_si128(d, _mm_avg_epu8(_mm_load_si128(d), _mm_loadu_si128((__m128i *)src))); src += src_stride; d++;
 }
 
-void h264e_qpel_average_wh_align_sse2(const uint8_t *src0, const uint8_t *src1, uint8_t *h264e_restrict dst, point_t wh)
+static void h264e_qpel_average_wh_align_sse2(const uint8_t *src0, const uint8_t *src1, uint8_t *h264e_restrict dst, point_t wh)
 {
     int w = wh.s.x;
     int h = wh.s.y;
@@ -3010,7 +3010,7 @@ void h264e_qpel_average_wh_align_sse2(const uint8_t *src0, const uint8_t *src1, 
     }
 }
 
-void h264e_qpel_interpolate_luma_sse2(const uint8_t *src, int src_stride, uint8_t *h264e_restrict dst, point_t wh, point_t dxdy)
+static void h264e_qpel_interpolate_luma_sse2(const uint8_t *src, int src_stride, uint8_t *h264e_restrict dst, point_t wh, point_t dxdy)
 {
     ALIGN(16) uint8_t scratch[16*16];
 //    src += ((dx + 1) >> 2) + ((dy + 1) >> 2)*src_stride;            // dx == 3 ? next row; dy == 3 ? next line
@@ -3059,7 +3059,7 @@ void h264e_qpel_interpolate_luma_sse2(const uint8_t *src, int src_stride, uint8_
     }
 }
 
-void h264e_qpel_interpolate_chroma_sse2(const uint8_t *src, int src_stride, uint8_t *h264e_restrict dst, point_t wh, point_t dxdy)
+static void h264e_qpel_interpolate_chroma_sse2(const uint8_t *src, int src_stride, uint8_t *h264e_restrict dst, point_t wh, point_t dxdy)
 {
     __m128i zero = _mm_setzero_si128();
     int w = wh.s.x;
@@ -3208,7 +3208,7 @@ void h264e_qpel_interpolate_chroma_sse2(const uint8_t *src, int src_stride, uint
     }
 }
 
-int h264e_sad_mb_unlaign_8x8_sse2(const pix_t *a, int a_stride, const pix_t *b, int sad[4])
+static int h264e_sad_mb_unlaign_8x8_sse2(const pix_t *a, int a_stride, const pix_t *b, int sad[4])
 {
     __m128i *mb = (__m128i *)b;
     __m128i s01, s23;
@@ -3238,9 +3238,9 @@ int h264e_sad_mb_unlaign_8x8_sse2(const pix_t *a, int a_stride, const pix_t *b, 
 }
 
 
-int h264e_sad_mb_unlaign_wh_sse2(const pix_t *a, int a_stride, const pix_t *b, point_t wh)
+static int h264e_sad_mb_unlaign_wh_sse2(const pix_t *a, int a_stride, const pix_t *b, point_t wh)
 {
-    __m128i * mb = (__m128i *)b;
+    __m128i *mb = (__m128i *)b;
     __m128i s;
 
     assert(wh.s.x == 8 || wh.s.x == 16);
@@ -3296,8 +3296,7 @@ int h264e_sad_mb_unlaign_wh_sse2(const pix_t *a, int a_stride, const pix_t *b, p
     return _mm_cvtsi128_si32(s);
 }
 
-
-void h264e_copy_8x8_sse2(pix_t *d, int d_stride, const pix_t *s)
+static void h264e_copy_8x8_sse2(pix_t *d, int d_stride, const pix_t *s)
 {
     assert(IS_ALIGNED(d, 8));
     assert(IS_ALIGNED(s, 8));
@@ -3311,7 +3310,7 @@ void h264e_copy_8x8_sse2(pix_t *d, int d_stride, const pix_t *s)
     _mm_storel_epi64((__m128i*)(d), _mm_loadl_epi64((__m128i*)(s)));
 }
 
-void h264e_copy_16x16_sse2(pix_t * d, int d_stride, const pix_t * s, int s_stride)
+static void h264e_copy_16x16_sse2(pix_t * d, int d_stride, const pix_t * s, int s_stride)
 {
     assert(IS_ALIGNED(d, 8));
     assert(IS_ALIGNED(s, 8));
@@ -3333,7 +3332,7 @@ void h264e_copy_16x16_sse2(pix_t * d, int d_stride, const pix_t * s, int s_strid
     _mm_storeu_si128((__m128i*)(d), _mm_loadu_si128((__m128i*)(s)));
 }
 
-void h264e_copy_borders_sse2(unsigned char *pic, int w, int h, int guard)
+static void h264e_copy_borders_sse2(unsigned char *pic, int w, int h, int guard)
 {
     int rowbytes = w + 2*guard;
     int topbot = 2;
@@ -3374,8 +3373,8 @@ void h264e_copy_borders_sse2(unsigned char *pic, int w, int h, int guard)
     } while(--topbot);
 
     {
-        pix_t * s0 = pic - guard*rowbytes;
-        pix_t * s1 = pic - guard*rowbytes + w - 1;
+        pix_t *s0 = pic - guard*rowbytes;
+        pix_t *s1 = pic - guard*rowbytes + w - 1;
         int cloop = 2*guard + h;
         if (guard == 8) do
         {
@@ -3460,7 +3459,7 @@ static void hadamar2_2d_sse(int16_t *x)
     x[3] = (int16_t)(a - b - c + d);
 }
 
-void h264e_quant_luma_dc_sse2(quant_t *q, int16_t *deq, const uint16_t *qdat)
+static void h264e_quant_luma_dc_sse2(quant_t *q, int16_t *deq, const uint16_t *qdat)
 {
     int16_t *tmp = ((int16_t*)q) - 16;
     hadamar4_2d_sse(tmp);
@@ -3471,7 +3470,7 @@ void h264e_quant_luma_dc_sse2(quant_t *q, int16_t *deq, const uint16_t *qdat)
     dequant_dc_sse(q, tmp, qdat[1] >> 2, 16);
 }
 
-int h264e_quant_chroma_dc_sse2(quant_t *q, int16_t *deq, const uint16_t *qdat)
+static int h264e_quant_chroma_dc_sse2(quant_t *q, int16_t *deq, const uint16_t *qdat)
 {
     int16_t *tmp = ((int16_t*)q) - 16;
     hadamar2_2d_sse(tmp);
@@ -3509,7 +3508,7 @@ static int is_zero4_sse(const quant_t *q, int i0, const uint16_t *thr)
            is_zero_sse(q[5].dq, i0, thr);
 }
 
-int h264e_transform_sub_quant_dequant_sse2(const pix_t *inp, const pix_t *pred, int inp_stride, int mode, quant_t *q, const uint16_t *qdat)
+static int h264e_transform_sub_quant_dequant_sse2(const pix_t *inp, const pix_t *pred, int inp_stride, int mode, quant_t *q, const uint16_t *qdat)
 {
     int crow = mode >> 1;
     int ccol = crow;
@@ -3701,7 +3700,7 @@ int h264e_transform_sub_quant_dequant_sse2(const pix_t *inp, const pix_t *pred, 
     return nz_block_mask;
 }
 
-void h264e_transform_add_sse2(pix_t* out, int out_stride, const pix_t* pred, quant_t* q, int side, int32_t mask)
+static void h264e_transform_add_sse2(pix_t* out, int out_stride, const pix_t* pred, quant_t* q, int side, int32_t mask)
 {
     int crow = side;
     int ccol = crow;
@@ -4468,7 +4467,7 @@ static void deblock_chroma_h_neon(uint8_t *pix, int32_t stride, int a, int b, co
     vst1_u8(pix,          vget_low_u8(q10));
 }
 
-void h264e_deblock_chroma_neon(uint8_t *pix, int32_t stride, const deblock_params_t *par)
+static void h264e_deblock_chroma_neon(uint8_t *pix, int32_t stride, const deblock_params_t *par)
 {
     const uint8_t *alpha = par->alpha;
     const uint8_t *beta = par->beta;
@@ -4504,7 +4503,7 @@ void h264e_deblock_chroma_neon(uint8_t *pix, int32_t stride, const deblock_param
     }
 }
 
-void h264e_deblock_luma_neon(uint8_t *pix, int32_t stride, const deblock_params_t *par)
+static void h264e_deblock_luma_neon(uint8_t *pix, int32_t stride, const deblock_params_t *par)
 {
     const uint8_t *alpha = par->alpha;
     const uint8_t *beta = par->beta;
@@ -4546,7 +4545,7 @@ void h264e_deblock_luma_neon(uint8_t *pix, int32_t stride, const deblock_params_
     }
 }
 
-void h264e_denoise_run_neon(unsigned char *frm, unsigned char *frmprev, int w, int h_arg, int stride_frm, int stride_frmprev)
+static void h264e_denoise_run_neon(unsigned char *frm, unsigned char *frmprev, int w, int h_arg, int stride_frm, int stride_frmprev)
 {
     int cloop, h = h_arg;
     if (w <= 2 || h <= 2)
@@ -4798,7 +4797,7 @@ static uint8x16_t intra_predict_dc16_neon(const pix_t *left, const pix_t *top)
 #define L2 edge[-4]
 #define L3 edge[-5]
 
-void h264e_intra_predict_16x16_neon(pix_t *predict, const pix_t *left, const pix_t *top, int mode)
+static void h264e_intra_predict_16x16_neon(pix_t *predict, const pix_t *left, const pix_t *top, int mode)
 {
     int cloop = 4;
     uint32_t *d = (uint32_t*)predict;
@@ -4833,7 +4832,7 @@ void h264e_intra_predict_16x16_neon(pix_t *predict, const pix_t *left, const pix
     }
 }
 
-void h264e_intra_predict_chroma_neon(pix_t *predict, const pix_t *left, const pix_t *top, int mode)
+static void h264e_intra_predict_chroma_neon(pix_t *predict, const pix_t *left, const pix_t *top, int mode)
 {
     int cloop = 8;
     uint32_t *d = (uint32_t*)predict;
@@ -4898,7 +4897,7 @@ static __inline int vsad_neon(uint8x16_t a, uint8x16_t b)
     return vget_lane_u32(vreinterpret_u32_u64(q), 0);
 }
 
-int h264e_intra_choose_4x4_neon(const pix_t *blockin, pix_t *blockpred, int avail, const pix_t *edge, int mpred, int penalty)
+static int h264e_intra_choose_4x4_neon(const pix_t *blockin, pix_t *blockpred, int avail, const pix_t *edge, int mpred, int penalty)
 {
     int sad, best_sad, best_m = 2;
 
@@ -5335,7 +5334,7 @@ static void average_16x16_unalign_neon(uint8_t* dst, const uint8_t* src, int src
     vst1q_u8(dst, vrhaddq_u8(vld1q_u8(dst), vld1q_u8(src)));  src += src_stride; dst += 16;
 }
 
-void h264e_qpel_average_wh_align_neon(const uint8_t *src0, const uint8_t *src1, uint8_t *h264e_restrict dst, point_t wh)
+static void h264e_qpel_average_wh_align_neon(const uint8_t *src0, const uint8_t *src1, uint8_t *h264e_restrict dst, point_t wh)
 {
     int w = wh.s.x;
     int h = wh.s.y;
@@ -5361,7 +5360,7 @@ void h264e_qpel_average_wh_align_neon(const uint8_t *src0, const uint8_t *src1, 
     }
 }
 
-void h264e_qpel_interpolate_luma_neon(const uint8_t *src, int src_stride, uint8_t *h264e_restrict dst, point_t wh, point_t dxdy)
+static void h264e_qpel_interpolate_luma_neon(const uint8_t *src, int src_stride, uint8_t *h264e_restrict dst, point_t wh, point_t dxdy)
 {
 //    src += ((dx + 1) >> 2) + ((dy + 1) >> 2)*src_stride;            // dx == 3 ? next row; dy == 3 ? next line
 //    dxdy              actions: Horizontal, Vertical, Diagonal, Average
@@ -5415,7 +5414,7 @@ void h264e_qpel_interpolate_luma_neon(const uint8_t *src, int src_stride, uint8_
     }
 }
 
-void h264e_qpel_interpolate_chroma_neon(const uint8_t *src, int src_stride, uint8_t *h264e_restrict dst, point_t wh, point_t dxdy)
+static void h264e_qpel_interpolate_chroma_neon(const uint8_t *src, int src_stride, uint8_t *h264e_restrict dst, point_t wh, point_t dxdy)
 {
     /* if fractionl mv is not (0, 0) */
     if (dxdy.u32)
@@ -5475,7 +5474,7 @@ void h264e_qpel_interpolate_chroma_neon(const uint8_t *src, int src_stride, uint
     }
 }
 
-int h264e_sad_mb_unlaign_8x8_neon(const pix_t *a, int a_stride, const pix_t *b, int _sad[4])
+static int h264e_sad_mb_unlaign_8x8_neon(const pix_t *a, int a_stride, const pix_t *b, int _sad[4])
 {
     uint16x8_t s0, s1;
     uint8x16_t va, vb;
@@ -5511,7 +5510,7 @@ int h264e_sad_mb_unlaign_8x8_neon(const pix_t *a, int a_stride, const pix_t *b, 
     return sum;
 }
 
-int h264e_sad_mb_unlaign_wh_neon(const pix_t *a, int a_stride, const pix_t *b, point_t wh)
+static int h264e_sad_mb_unlaign_wh_neon(const pix_t *a, int a_stride, const pix_t *b, point_t wh)
 {
     uint16x8_t s0, s1;
     uint8x16_t va, vb;
@@ -5574,7 +5573,7 @@ int h264e_sad_mb_unlaign_wh_neon(const pix_t *a, int a_stride, const pix_t *b, p
     return sum;
 }
 
-void h264e_copy_8x8_neon(pix_t *d, int d_stride, const pix_t *s)
+static void h264e_copy_8x8_neon(pix_t *d, int d_stride, const pix_t *s)
 {
     vst1_u8(d, vld1_u8(s)); s += 16;  d += d_stride;
     vst1_u8(d, vld1_u8(s)); s += 16;  d += d_stride;
@@ -5588,7 +5587,7 @@ void h264e_copy_8x8_neon(pix_t *d, int d_stride, const pix_t *s)
 }
 
 
-void h264e_copy_16x16_neon(pix_t *d, int d_stride, const pix_t *s, int s_stride)
+static void h264e_copy_16x16_neon(pix_t *d, int d_stride, const pix_t *s, int s_stride)
 {
     assert(!((unsigned)d & 7));
     assert(!((unsigned)s & 7));
@@ -5693,7 +5692,7 @@ static void hadamar2_2d_neon(int16_t * x)
     x[3] = (int16_t)(a - b - c + d);
 }
 
-void h264e_quant_luma_dc_neon(quant_t *q, int16_t *deq, const uint16_t *qdat)
+static void h264e_quant_luma_dc_neon(quant_t *q, int16_t *deq, const uint16_t *qdat)
 {
     int16_t *tmp = ((int16_t*)q) - 16;
     hadamar4_2d_neon(tmp);
@@ -5704,7 +5703,7 @@ void h264e_quant_luma_dc_neon(quant_t *q, int16_t *deq, const uint16_t *qdat)
     dequant_dc_neon(q, tmp, qdat[1] >> 2, 16);
 }
 
-int h264e_quant_chroma_dc_neon(quant_t *q, int16_t *deq, const uint16_t *qdat)
+static int h264e_quant_chroma_dc_neon(quant_t *q, int16_t *deq, const uint16_t *qdat)
 {
     int16_t *tmp = ((int16_t*)q) - 16;
     hadamar2_2d_neon(tmp);
@@ -6067,7 +6066,7 @@ static void transform_neon(const pix_t *inp, const pix_t *pred, int inp_stride, 
     } while (--crow);
 }
 
-int h264e_transform_sub_quant_dequant_neon(const pix_t *inp, const pix_t *pred, int inp_stride, int mode, quant_t *q, const uint16_t *qdat)
+static int h264e_transform_sub_quant_dequant_neon(const pix_t *inp, const pix_t *pred, int inp_stride, int mode, quant_t *q, const uint16_t *qdat)
 {
     int zmask;
     transform_neon(inp, pred, inp_stride, mode, q);
@@ -6086,7 +6085,7 @@ int h264e_transform_sub_quant_dequant_neon(const pix_t *inp, const pix_t *pred, 
     return quantize_neon(q, mode, qdat, zmask);
 }
 
-void h264e_transform_add_neon(pix_t *out, int out_stride, const pix_t *pred, quant_t *q, int side, int32_t mask)
+static void h264e_transform_add_neon(pix_t *out, int out_stride, const pix_t *pred, quant_t *q, int side, int32_t mask)
 {
     int crow = side;
     int ccol = crow;
@@ -6401,7 +6400,7 @@ static void deblock_chroma_h(uint8_t *pix, int32_t stride, int a, int b, const u
     }
 }
 
-void h264e_deblock_chroma(uint8_t *pix, int32_t stride, const deblock_params_t *par)
+static void h264e_deblock_chroma(uint8_t *pix, int32_t stride, const deblock_params_t *par)
 {
     const uint8_t *alpha = par->alpha;
     const uint8_t *beta  = par->beta;
@@ -6437,7 +6436,7 @@ void h264e_deblock_chroma(uint8_t *pix, int32_t stride, const deblock_params_t *
     }
 }
 
-void h264e_deblock_luma(uint8_t *pix, int32_t stride, const deblock_params_t *par)
+static void h264e_deblock_luma(uint8_t *pix, int32_t stride, const deblock_params_t *par)
 {
     const uint8_t *alpha = par->alpha;
     const uint8_t *beta  = par->beta;
@@ -6479,7 +6478,7 @@ void h264e_deblock_luma(uint8_t *pix, int32_t stride, const deblock_params_t *pa
     }
 }
 
-void h264e_denoise_run(unsigned char *frm, unsigned char *frmprev, int w, int h_arg, int stride_frm, int stride_frmprev)
+static void h264e_denoise_run(unsigned char *frm, unsigned char *frmprev, int w, int h_arg, int stride_frm, int stride_frmprev)
 {
     int cloop, h = h_arg;
     if (w <= 2 || h <= 2)
@@ -6609,7 +6608,7 @@ static uint32_t intra_predict_dc(const pix_t *left, const pix_t *top, int log_si
 #define L2 edge[-4]
 #define L3 edge[-5]
 
-void h264e_intra_predict_16x16(pix_t *predict,  const pix_t *left, const pix_t *top, int mode)
+static void h264e_intra_predict_16x16(pix_t *predict,  const pix_t *left, const pix_t *top, int mode)
 {
     int cloop = 16;
     uint32_t *d = (uint32_t*)predict;
@@ -6648,15 +6647,15 @@ void h264e_intra_predict_16x16(pix_t *predict,  const pix_t *left, const pix_t *
     }
 }
 
-void h264e_intra_predict_chroma(pix_t *predict, const pix_t *left, const pix_t *top, int mode)
+static void h264e_intra_predict_chroma(pix_t *predict, const pix_t *left, const pix_t *top, int mode)
 {
     int cloop = 8;
-    uint32_t * d = (uint32_t*)predict;
+    uint32_t *d = (uint32_t*)predict;
     assert(IS_ALIGNED(predict, 4));
     assert(IS_ALIGNED(top, 4));
     if (mode < 1)
     {
-        uint32_t t0,t1,t2,t3;
+        uint32_t t0, t1, t2, t3;
         t0 = ((uint32_t*)top)[0];
         t1 = ((uint32_t*)top)[1];
         t2 = ((uint32_t*)top)[2];
@@ -6715,7 +6714,6 @@ void h264e_intra_predict_chroma(pix_t *predict, const pix_t *left, const pix_t *
     }
 }
 
-
 static int pix_sad_4(uint32_t r0, uint32_t r1, uint32_t r2, uint32_t r3,
                      uint32_t x0, uint32_t x1, uint32_t x2, uint32_t x3)
 {
@@ -6751,7 +6749,7 @@ static int pix_sad_4(uint32_t r0, uint32_t r1, uint32_t r2, uint32_t r3,
 #endif
 }
 
-int h264e_intra_choose_4x4(const pix_t *blockin, pix_t *blockpred, int avail, const pix_t *edge, int mpred, int penalty)
+static int h264e_intra_choose_4x4(const pix_t *blockin, pix_t *blockpred, int avail, const pix_t *edge, int mpred, int penalty)
 {
     int sad, best_sad, best_m = 2;
 
@@ -7075,7 +7073,7 @@ void h264e_qpel_interpolate_luma(const uint8_t *src, int src_stride, uint8_t *h2
     }
 }
 
-void h264e_qpel_interpolate_chroma(const uint8_t *src, int src_stride, uint8_t *h264e_restrict dst, point_t wh, point_t dxdy)
+static void h264e_qpel_interpolate_chroma(const uint8_t *src, int src_stride, uint8_t *h264e_restrict dst, point_t wh, point_t dxdy)
 {
     /* if fractionl mv is not (0, 0) */
     if (dxdy.u32)
@@ -7120,7 +7118,7 @@ static int sad_block(const pix_t *a, int a_stride, const pix_t *b, int b_stride,
     return sad;
 }
 
-int h264e_sad_mb_unlaign_8x8(const pix_t *a, int a_stride, const pix_t *b, int sad[4])
+static int h264e_sad_mb_unlaign_8x8(const pix_t *a, int a_stride, const pix_t *b, int sad[4])
 {
     sad[0] = sad_block(a,     a_stride, b,     16, 8, 8);
     sad[1] = sad_block(a + 8, a_stride, b + 8, 16, 8, 8);
@@ -7131,12 +7129,12 @@ int h264e_sad_mb_unlaign_8x8(const pix_t *a, int a_stride, const pix_t *b, int s
     return sad[0] + sad[1] + sad[2] + sad[3];
 }
 
-int h264e_sad_mb_unlaign_wh(const pix_t *a, int a_stride, const pix_t *b, point_t wh)
+static int h264e_sad_mb_unlaign_wh(const pix_t *a, int a_stride, const pix_t *b, point_t wh)
 {
     return sad_block(a, a_stride, b, 16, wh.s.x, wh.s.y);
 }
 
-void h264e_copy_8x8(pix_t *d, int d_stride, const pix_t *s)
+static void h264e_copy_8x8(pix_t *d, int d_stride, const pix_t *s)
 {
     int cloop = 8;
     assert(IS_ALIGNED(d, 8));
@@ -7152,7 +7150,7 @@ void h264e_copy_8x8(pix_t *d, int d_stride, const pix_t *s)
     } while(--cloop);
 }
 
-void h264e_copy_16x16(pix_t *d, int d_stride, const pix_t *s, int s_stride)
+static void h264e_copy_16x16(pix_t *d, int d_stride, const pix_t *s, int s_stride)
 {
     int cloop = 16;
     assert(IS_ALIGNED(d, 8));
@@ -7172,7 +7170,7 @@ void h264e_copy_16x16(pix_t *d, int d_stride, const pix_t *s, int s_stride)
     } while(--cloop);
 }
 
-void h264e_copy_borders(unsigned char *pic, int w, int h, int guard)
+static void h264e_copy_borders(unsigned char *pic, int w, int h, int guard)
 {
     int r, rowbytes = w + 2*guard;
     unsigned char *d = pic - guard;
@@ -7241,7 +7239,6 @@ static void hadamar4_2d(int16_t * x)
     } while (s != 1);
 }
 
-
 static void dequant_dc(quant_t *q, int16_t *qval, int dequant, int n)
 {
     do q++->dq[0] = (int16_t)(*qval++ * (int16_t)dequant); while (--n);
@@ -7283,8 +7280,7 @@ static void hadamar2_2d(int16_t * x)
     x[3] = (int16_t)(a - b - c + d);
 }
 
-
-void h264e_quant_luma_dc(quant_t *q, int16_t *deq, const uint16_t *qdat)
+static void h264e_quant_luma_dc(quant_t *q, int16_t *deq, const uint16_t *qdat)
 {
     int16_t *tmp = ((int16_t*)q) - 16;
     hadamar4_2d(tmp);
@@ -7295,7 +7291,7 @@ void h264e_quant_luma_dc(quant_t *q, int16_t *deq, const uint16_t *qdat)
     dequant_dc(q, tmp, qdat[1] >> 2, 16);
 }
 
-int h264e_quant_chroma_dc(quant_t *q, int16_t *deq, const uint16_t *qdat)
+static int h264e_quant_chroma_dc(quant_t *q, int16_t *deq, const uint16_t *qdat)
 {
     int16_t *tmp = ((int16_t*)q) - 16;
     hadamar2_2d(tmp);
@@ -7563,7 +7559,7 @@ static void transform(const pix_t *inp, const pix_t *pred, int inp_stride, int m
     } while (--crow);
 }
 
-int h264e_transform_sub_quant_dequant(const pix_t *inp, const pix_t *pred, int inp_stride, int mode, quant_t *q, const uint16_t *qdat)
+static int h264e_transform_sub_quant_dequant(const pix_t *inp, const pix_t *pred, int inp_stride, int mode, quant_t *q, const uint16_t *qdat)
 {
     int zmask;
     transform(inp, pred, inp_stride, mode, q);
@@ -7582,7 +7578,7 @@ int h264e_transform_sub_quant_dequant(const pix_t *inp, const pix_t *pred, int i
     return quantize(q, mode, qdat, zmask);
 }
 
-void h264e_transform_add(pix_t *out, int out_stride, const pix_t *pred, quant_t *q, int side, int32_t mask)
+static void h264e_transform_add(pix_t *out, int out_stride, const pix_t *pred, quant_t *q, int side, int32_t mask)
 {
     int crow = side;
     int ccol = crow;
@@ -7638,7 +7634,7 @@ void h264e_transform_add(pix_t *out, int out_stride, const pix_t *pred, quant_t 
 #define CODE(val, len) (uint8_t)((val << 4) + (len - 1))
 #define BS_BITS 32
 
-void h264e_bs_put_bits(bs_t *bs, unsigned n, unsigned val)
+static void h264e_bs_put_bits(bs_t *bs, unsigned n, unsigned val)
 {
     assert(!(val >> n));
     bs->shift -= n;
@@ -7654,12 +7650,12 @@ void h264e_bs_put_bits(bs_t *bs, unsigned n, unsigned val)
     bs->cache |= val << bs->shift;
 }
 
-void h264e_bs_flush(bs_t *bs)
+static void h264e_bs_flush(bs_t *bs)
 {
     *bs->buf = SWAP32(bs->cache);
 }
 
-unsigned h264e_bs_get_pos_bits(const bs_t *bs)
+static unsigned h264e_bs_get_pos_bits(const bs_t *bs)
 {
     unsigned pos_bits = (unsigned)((bs->buf - bs->origin)*BS_BITS);
     pos_bits += BS_BITS - bs->shift;
@@ -7667,7 +7663,7 @@ unsigned h264e_bs_get_pos_bits(const bs_t *bs)
     return pos_bits;
 }
 
-unsigned h264e_bs_byte_align(bs_t * bs)
+static unsigned h264e_bs_byte_align(bs_t * bs)
 {
     int pos = h264e_bs_get_pos_bits(bs);
     h264e_bs_put_bits(bs, -pos & 7, 0);
@@ -7688,7 +7684,7 @@ unsigned h264e_bs_byte_align(bs_t * bs)
 *   [7..14] => 0001xxx
 *
 */
-void h264e_bs_put_golomb(bs_t *bs, unsigned val)
+static void h264e_bs_put_golomb(bs_t *bs, unsigned val)
 {
 #ifdef __arm
     int size = 32 - __clz(val + 1);
@@ -7714,14 +7710,14 @@ void h264e_bs_put_golomb(bs_t *bs, unsigned val)
 *       3 => 5
 *      -3 => 6
 */
-void h264e_bs_put_sgolomb(bs_t * bs, int val)
+static void h264e_bs_put_sgolomb(bs_t *bs, int val)
 {
     val = 2*val - 1;
     val ^= val >> 31;
     h264e_bs_put_golomb(bs, val);
 }
 
-void h264e_bs_init_bits(bs_t *bs, void *data)
+static void h264e_bs_init_bits(bs_t *bs, void *data)
 {
     bs->origin = data;
     bs->buf = bs->origin;
@@ -7741,7 +7737,7 @@ if ((shift -= n) < 0)       \
 }                           \
 cache |= val << shift;
 
-void h264e_vlc_encode(bs_t *bs, int16_t *quant, int maxNumCoeff, uint8_t *nz_ctx)
+static void h264e_vlc_encode(bs_t *bs, int16_t *quant, int maxNumCoeff, uint8_t *nz_ctx)
 {
     int nnz_context, nlevels, nnz; // nnz = nlevels + trailing_ones
     int trailing_ones = 0;
@@ -7969,7 +7965,7 @@ static uint32_t udiv32(uint32_t n, uint32_t d)
     return q;
 }
 
-void h264e_copy_8x8_s(pix_t *d, int d_stride, const pix_t *s, int s_stride)
+static void h264e_copy_8x8_s(pix_t *d, int d_stride, const pix_t *s, int s_stride)
 {
     int cloop = 8;
     assert(!((unsigned)(uintptr_t)d & 7));
@@ -7985,7 +7981,7 @@ void h264e_copy_8x8_s(pix_t *d, int d_stride, const pix_t *s, int s_stride)
     } while(--cloop);
 }
 
-void h264e_frame_downsampling(uint8_t *out, int wo, int ho,
+static void h264e_frame_downsampling(uint8_t *out, int wo, int ho,
     const uint8_t *src, int wi, int hi, int wo_Crop, int ho_Crop, int wi_Crop, int hi_Crop)
 {
 #define Q_BILIN 12
@@ -8079,7 +8075,7 @@ static const int8_t g_filter16_luma[16][4] =
     { -1,  2, 32, -1 }
 };
 
-void h264e_intra_upsampling(int srcw, int srch, int dstw, int dsth, int is_chroma,
+static void h264e_intra_upsampling(int srcw, int srch, int dstw, int dsth, int is_chroma,
     const uint8_t *arg_src, int src_stride, uint8_t *arg_dst, int dst_stride)
 {
     int i, j;
