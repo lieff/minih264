@@ -748,16 +748,6 @@ typedef struct H264E_persist_tag
 
 } h264e_enc_t;
 
-void h264e_frame_downsampling(uint8_t *out, int wo, int ho, const uint8_t *src, int wi, int hi, int wo_crop, int ho_crop, int wi_crop, int hi_crop);
-void h264e_copy_8x8_s(pix_t *d, int d_stride, const pix_t *s, int s_stride);
-void h264e_intra_upsampling(int base_w, int base_h, int curr_w, int curr_h, int is_chroma, const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride);
-
-extern const uint8_t h264e_g_run_before[];
-extern const uint8_t h264e_g_coeff_token[];
-extern const uint8_t h264e_g_total_zeros[];
-extern const uint8_t h264e_g_total_zeros_cr_2x2[];
-extern const uint8_t g_diff_to_gainQ8[];
-
 #ifdef __cplusplus
 }
 #endif //__cplusplus
