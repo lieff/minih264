@@ -8289,7 +8289,7 @@ void h264e_intra_upsampling(int srcw, int srch, int dstw, int dsth, int is_chrom
 /*      Declare exported functions for each configuration               */
 /************************************************************************/
 #if !H264E_CONFIGS_COUNT
-#   error "MINIH264 error: no build configuration defined"
+#   error no build configuration defined
 #elif H264E_CONFIGS_COUNT == 1
 //  Exactly one configuration: append config suffix to exported names
 #   if H264E_ENABLE_NEON
@@ -8573,15 +8573,11 @@ static void init_vft(int enableNEON)
 */
 static unsigned __clz(unsigned v)
 {
-#if H264E_ENABLE_SSE2 && (H264E_CONFIGS_COUNT == 1)
-  #if defined(_MSC_VER)
+#if defined(_MSC_VER)
     unsigned long nbit;
     _BitScanReverse(&nbit, v);
     return 31 - nbit;
-  #else
-    return __builtin_clz(v);
-  #endif
-#elif defined(__arm__) || defined(__aarch64__)
+#elif defined(__GNUC__) || defined(__clang__) || defined(__arm) || defined(__arm__) || defined(__aarch64__)
     return __builtin_clz(v);
 #else
     unsigned clz = 32;
