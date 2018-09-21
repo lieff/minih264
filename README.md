@@ -35,6 +35,16 @@ minih264: PSNR y:33.321686 u:38.858879 v:39.955914 average:34.574459 min:32.3891
 
 TBD
 
+## SVC
+
+Minih264 supports both spatial and temporal layers. Spatial layers is almost same as encode 2 independent AVC streams except for Intra frames prediction.
+Following diagram shows minih264 SVC scheme for two spatial layers:
+
+![SVC diargam](images/svc.png?raw=true)
+
+Thats because of P frames spatial prediction almost useless in practice. But for Intra frames there ~20% benefit in full resolution frame size.
+Note that decoder must have both: base layer I frame and full resolution SVC I frame to decode whole sequence of next P frames in full resolution.
+
 ## Interesting links
 
  * https://www.videolan.org/developers/x264.html
