@@ -3514,7 +3514,7 @@ static int h264e_transform_sub_quant_dequant_sse2(const pix_t *inp, const pix_t 
     int ccol = crow;
     int i, i0 = mode & 1;
     int nz_block_mask = 0;
-    int  zmask = 0;
+    int zmask = 0;
     quant_t *q_0 = q;
 
     int y, x;
@@ -5680,7 +5680,7 @@ static void quant_dc_neon(int16_t *qval, int16_t *deq, int16_t quant, int n, int
 #endif
 }
 
-static void hadamar2_2d_neon(int16_t * x)
+static void hadamar2_2d_neon(int16_t *x)
 {
     int a = x[0];
     int b = x[1];
@@ -10909,7 +10909,7 @@ static void mb_encode(h264e_enc_t *enc, int enc_type)
     pix_t *top = enc->top_line + 48 + enc->mb.x*32;
     pix_t *left = enc->top_line;
     int avail = enc->mb.avail = mb_avail_flag(enc);
-    int base_mode=0;
+    int base_mode = 0;
 
     if (enc->frame.cropping_flag && ((enc->mb.x + 1)*16 > enc->param.width || (enc->mb.y + 1)*16 > enc->param.height))
     {
@@ -11005,7 +11005,7 @@ static uint16_t rc_rnd2thr(int round, int q)
     int b, thr = 0;
     for (b = 0x8000; b; b >>= 1)
     {
-        int t = (thr|b)*q;
+        int t = (thr | b)*q;
         if (t <= 0x10000 - round)  // TODO: error: < !!!!!!!
         {
             thr |= b;
@@ -11266,10 +11266,10 @@ static void rc_frame_end(h264e_enc_t *enc, int intra_flag, int skip_flag, int is
 
         if (!is_refers_to_long_term)
         {
-            if ((enc->rc.qp_smooth >> 8)-enc->rc.dqp_smooth < qp - 1)
+            if ((enc->rc.qp_smooth >> 8) - enc->rc.dqp_smooth < qp - 1)
             {
                 enc->rc.dqp_smooth--;
-            } else if ((enc->rc.qp_smooth >> 8)-enc->rc.dqp_smooth > qp + 1)
+            } else if ((enc->rc.qp_smooth >> 8) - enc->rc.dqp_smooth > qp + 1)
             {
                 enc->rc.dqp_smooth++;
             }
@@ -11279,7 +11279,7 @@ static void rc_frame_end(h264e_enc_t *enc, int intra_flag, int skip_flag, int is
             enc->rc.max_dqp = enc->rc.dqp_smooth;
         } else
         {
-            enc->rc.max_dqp = MAX(enc->rc.max_dqp, (enc->rc.qp_smooth >> 8)-qp);
+            enc->rc.max_dqp = MAX(enc->rc.max_dqp, (enc->rc.qp_smooth >> 8) - qp);
         }
     }
 
@@ -11429,7 +11429,7 @@ static pix_t *io_yuv_set_pointers(pix_t *base, H264E_io_yuv_t *frm, int w, int h
 /**
 *   Verify encoder creation parameters. Return error code, or 0 if prameters
 */
-static int enc_check_create_params(const H264E_create_param_t * par)
+static int enc_check_create_params(const H264E_create_param_t *par)
 {
     if (!par)
     {
@@ -11514,8 +11514,8 @@ static int H264E_init_one(h264e_enc_t *enc, const H264E_create_param_t *opt, int
         enc->inp.yuv[1] = enc->inp.yuv[0] + enc->frame.w*enc->frame.h;
         enc->inp.yuv[2] = enc->inp.yuv[1] + enc->frame.w*enc->frame.h/4;
         enc->inp.stride[0] = enc->frame.w;
-        enc->inp.stride[1]= enc->frame.w/2;
-        enc->inp.stride[2]= enc->frame.w/2;
+        enc->inp.stride[1] = enc->frame.w/2;
+        enc->inp.stride[2] = enc->frame.w/2;
         enc->dec = enc->inp;
     }
 #endif
@@ -11526,7 +11526,7 @@ static int H264E_init_one(h264e_enc_t *enc, const H264E_create_param_t *opt, int
     {
         pix_t *p = base;
         base = io_yuv_set_pointers(base, &enc->denoise, enc->frame.nmbx*16, enc->frame.nmby*16);
-        while(p < base) *p++ = 0;
+        while (p < base) *p++ = 0;
     }
 #endif
     if (enc->param.const_input_flag)
@@ -11706,7 +11706,7 @@ static int H264E_encode_one(H264E_persist_t *enc, const H264E_run_param_t *opt,
                 enc_thr[ithr] = *enc;
                 enc_thr[ithr].mb.y = mby;
                 enc_thr[ithr].mb.num = mby*enc->frame.nmbx;
-                mby += (enc->frame.nmby - mby)/ (enc->param.max_threads - ithr);
+                mby += (enc->frame.nmby - mby) / (enc->param.max_threads - ithr);
                 enc_thr[ithr].frame.nmby = mby;
                 enc_thr[ithr].rc.bit_budget /= enc->param.max_threads;
                 enc_thr[ithr].frame.nmb = enc_thr[ithr].frame.nmbx * enc_thr[ithr].frame.nmby;
@@ -11926,8 +11926,8 @@ int H264E_encode(H264E_persist_t *enc, H264E_scratch_t *scratch, const H264E_run
     case H264E_FRAME_TYPE_KEY:      long_term_idx_use = -1; long_term_idx_update = enc->param.max_long_term_reference_frames > 0; break;
     case H264E_FRAME_TYPE_GOLDEN:   long_term_idx_use =  1; long_term_idx_update = 1; break;
     case H264E_FRAME_TYPE_RECOVERY: long_term_idx_use =  1; long_term_idx_update = 0; break;
-    case H264E_FRAME_TYPE_P:        long_term_idx_use =  enc->most_recent_ref_frame_idx; long_term_idx_update = 0; break;
-    case H264E_FRAME_TYPE_DROPPABLE:long_term_idx_use =  enc->most_recent_ref_frame_idx; long_term_idx_update =-1; break;
+    case H264E_FRAME_TYPE_P:        long_term_idx_use =  enc->most_recent_ref_frame_idx; long_term_idx_update =  0; break;
+    case H264E_FRAME_TYPE_DROPPABLE:long_term_idx_use =  enc->most_recent_ref_frame_idx; long_term_idx_update = -1; break;
     case H264E_FRAME_TYPE_CUSTOM:   long_term_idx_use =  opt->long_term_idx_use; long_term_idx_update = opt->long_term_idx_update;
         if (!long_term_idx_use)
         {
