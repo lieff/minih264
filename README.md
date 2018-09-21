@@ -41,3 +41,10 @@ TBD
  * https://www.openh264.org/
  * https://github.com/cisco/openh264
  * http://iphome.hhi.de/suehring/tml/
+ * https://github.com/oneam/h264bsd
+ * https://github.com/fhunleth/hollowcore-h264
+ * https://github.com/digetx/h264_decoder
+ * https://github.com/lspbeyond/p264decoder
+ * https://github.com/jcasal-homer/HomerHEVC
+ * https://github.com/neocoretechs/h264j
+ * https://github.com/jcodec/jcodec
