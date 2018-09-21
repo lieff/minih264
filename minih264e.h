@@ -3347,8 +3347,8 @@ void h264e_copy_borders_sse2(unsigned char *pic, int w, int h, int guard)
 {
     int rowbytes = w + 2*guard;
     int topbot = 2;
-    pix_t * s = pic;
-    pix_t * d = pic - guard*rowbytes;
+    pix_t *s = pic;
+    pix_t *d = pic - guard*rowbytes;
     assert(guard == 8 || guard == 16);
     assert((w % 8) == 0);
     do
@@ -5621,25 +5621,6 @@ void h264e_copy_16x16_neon(pix_t *d, int d_stride, const pix_t *s, int s_stride)
     vst1q_u8(d, vld1q_u8(s)); s += s_stride; d += d_stride;
     vst1q_u8(d, vld1q_u8(s)); s += s_stride; d += d_stride;
     vst1q_u8(d, vld1q_u8(s)); s += s_stride; d += d_stride;
-}
-
-
-void h264e_copy_borders_neon(unsigned char *pic, int w, int h, int guard)
-{
-    int r, rowbytes = w + 2*guard;
-    unsigned char *d = pic - guard;
-    for (r = 0; r < h; r++, d += rowbytes)
-    {
-        memset(d, d[guard], guard); 
-        memset(d + rowbytes - guard, d[rowbytes - guard - 1], guard);
-    }
-    d = pic - guard - guard*rowbytes;
-    for (r = 0; r < guard; r++)
-    {
-        memcpy(d, pic - guard, rowbytes); 
-        memcpy(d + (guard + h)*rowbytes, pic - guard + (h - 1)*rowbytes, rowbytes);
-        d += rowbytes;
-    }
 }
 
 // Keep intermediate data in transposed format.
@@ -8283,6 +8264,7 @@ void h264e_intra_upsampling(int srcw, int srch, int dstw, int dsth, int is_chrom
 #   define h264e_transform_sub_quant_dequant_neon    h264e_transform_sub_quant_dequant
 #   define h264e_quant_luma_dc_neon                  h264e_quant_luma_dc
 #   define h264e_quant_chroma_dc_neon                h264e_quant_chroma_dc
+#   define h264e_copy_borders_neon                   h264e_copy_borders
 #endif
 
 /************************************************************************/
