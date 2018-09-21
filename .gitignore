@@ -1,0 +1,5 @@
+h264enc_*
+qemu-prof
+*.gcda
+*.gcno
+*.gcov

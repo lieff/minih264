@@ -1,0 +1,31 @@
+language: c
+addons:
+  apt:
+    packages:
+      - libc6-dev-i386
+      - linux-libc-dev:i386
+      - gcc-arm-none-eabi
+      - gcc-arm-linux-gnueabihf
+      - libnewlib-arm-none-eabi
+      - gcc-4.8-multilib
+      - gcc-4.8-aarch64-linux-gnu
+      - gcc-4.8-powerpc-linux-gnu
+      - gcc-aarch64-linux-gnu
+      - gcc-powerpc-linux-gnu
+      - libc6-armhf-cross
+      - libc6-arm64-cross
+      - libc6-powerpc-cross
+      - libc6-dev-armhf-cross
+      - libc6-dev-arm64-cross
+      - libc6-dev-powerpc-cross
+      - qemu
+
+os:
+    - linux
+
+compiler:
+    - gcc
+
+script:
+    - scripts/build_x86.sh
+    - scripts/build_arm.sh

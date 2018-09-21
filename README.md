@@ -1,6 +1,8 @@
 minih264
 ==========
 
+[![Build Status](https://travis-ci.org/lieff/minih264.svg)](https://travis-ci.org/lieff/minih264)
+
 Small, but yet reasonable fast H264/SVC encoder single-header library with SSE/NEON optimizations.
 
 Disclamer: code highly experemental.
