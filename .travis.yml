@@ -29,3 +29,4 @@ compiler:
 script:
     - scripts/build_x86.sh
     - scripts/build_arm.sh
+    - scripts/test.sh

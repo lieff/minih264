@@ -4,4 +4,4 @@ CUR_DIR=$(cd $(dirname ${CUR_DIR}); pwd)/$(basename ${CUR_DIR})/
 
 pushd $CUR_DIR/..
 
-qemu-arm -d in_asm,exec,nochain ./h264enc_clang vectors/foreman.cif 2>&1 | ./qemu-prof
+qemu-arm -d in_asm,exec,nochain ./h264enc_arm_clang vectors/foreman.cif 2>&1 | ./qemu-prof
