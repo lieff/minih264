@@ -3,10 +3,10 @@ minih264
 
 [![Build Status](https://travis-ci.org/lieff/minih264.svg)](https://travis-ci.org/lieff/minih264)
 
-Small, but yet reasonable fast H264/SVC encoder single-header library with SSE/NEON optimizations.
+Small, but yet reasonably fast H264/SVC encoder single-header library with SSE/NEON optimizations.
 Decoder can be popped up in future.
 
-Disclamer: code highly experemental.
+Disclaimer: code highly experimental.
 
 ## Comparison with [x264](https://www.videolan.org/developers/x264.html)
 
@@ -37,17 +37,17 @@ TBD
 
 ## SVC
 
-Minih264 supports both spatial and temporal layers. Spatial layers is almost same as encode 2 independent AVC streams except for Intra frames prediction.
+Minih264 supports both spatial and temporal layers. Spatial layers are almost same as encode 2 independent AVC streams except for Intra frames prediction.
 Following diagram shows minih264 SVC scheme for two spatial layers:
 
 ![SVC diargam](images/svc.png?raw=true)
 
-Thats because of P frames spatial prediction almost useless in practice. But for Intra frames there ~20% benefit in full resolution frame size.
-Note that decoder must have both: base layer I frame and full resolution SVC I frame to decode whole sequence of next P frames in full resolution.
+That's because P frames spatial prediction are almost useless in practice. But for Intra frames there is a ~20% benefit in full resolution frame size.
+Note that decoder must have both base layer I frame _and_ full resolution SVC I frame to decode whole sequence of next P frames in full resolution.
 
 ## Limitations
 
-Following major features is not supported compare to x264:
+The following major features are not supported compared to x264:
 
  * Trellis quantization.
  * Select prediction mode using Sum of Absolute Transform Differences (SATD).
