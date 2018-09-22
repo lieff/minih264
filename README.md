@@ -31,6 +31,10 @@ x264:     PSNR y:32.774824 u:38.874450 v:39.926132 average:34.084281 min:31.8426
 minih264: PSNR y:33.321686 u:38.858879 v:39.955914 average:34.574459 min:32.389171 max:37.174073
 ```
 
+First intra frame screenshot (left-to-right: original 152064, minih264 5067, x264 5297 bytes):
+
+![Intra screenshot](images/intra.png?raw=true)
+
 ## Usage
 
 TBD
