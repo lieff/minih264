@@ -45,6 +45,14 @@ Following diagram shows minih264 SVC scheme for two spatial layers:
 Thats because of P frames spatial prediction almost useless in practice. But for Intra frames there ~20% benefit in full resolution frame size.
 Note that decoder must have both: base layer I frame and full resolution SVC I frame to decode whole sequence of next P frames in full resolution.
 
+## Limitations
+
+Following major features is not supported compare to x264:
+
+ * Trellis quantization.
+ * Select prediction mode using Sum of Absolute Transform Differences (SATD).
+ * 4x4 motion compensation.
+
 ## Interesting links
 
  * https://www.videolan.org/developers/x264.html
@@ -56,5 +64,6 @@ Note that decoder must have both: base layer I frame and full resolution SVC I f
  * https://github.com/digetx/h264_decoder
  * https://github.com/lspbeyond/p264decoder
  * https://github.com/jcasal-homer/HomerHEVC
+ * https://github.com/ultravideo/kvazaar
  * https://github.com/neocoretechs/h264j
  * https://github.com/jcodec/jcodec
