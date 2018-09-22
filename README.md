@@ -35,6 +35,8 @@ First intra frame screenshot (left-to-right: original 152064, minih264 5067, x26
 
 ![Intra screenshot](images/intra.png?raw=true)
 
+You can compare results in motion using ffplay/mpv players on vectors/out_ref.264 and vectors/x264.264 .
+
 ## Usage
 
 TBD
