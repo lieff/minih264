@@ -7,11 +7,9 @@
 //#define MINIH264_ONLY_SIMD
 #include "minih264e.h"
 
-#define ENABLE_PSNR 0
 #define DEFAULT_GOP 20
 #define DEFAULT_QP 33
 #define DEFAULT_DENOISE 0
-#define GENERATE_INPUT 0
 
 #define ENABLE_TEMPORAL_SCALABILITY 0
 #define MAX_LONG_TERM_FRAMES        8 // used only if ENABLE_TEMPORAL_SCALABILITY==1
@@ -109,13 +107,7 @@ struct
 {
     const char *input_file;
     const char *output_file;
-    int gop;
-    int qp;
-    int kbps;
-    int max_frames;
-    int max_threads;
-    int speed;
-    int denoise;
+    int gen, gop, qp, kbps, max_frames, threads, speed, denoise, stats, psnr;
 } cmdline[1];
 
 static int str_equal(const char *pattern, char **p)
@@ -146,33 +138,42 @@ static int read_cmdline_options(int argc, char *argv[])
         if (*p == '-')
         {
             p++;
-            if (str_equal(("gop"), &p))
+            if (str_equal(("gen"), &p))
+            {
+                cmdline->gen = 1;
+            } else if (str_equal(("gop"), &p))
             {
                 cmdline->gop = atoi(p);
             } else if (str_equal(("qp"), &p))
             {
                 cmdline->qp = atoi(p);
-            } else if (str_equal(("speed"), &p))
-            {
-                cmdline->speed = atoi(p);
-            } else if (str_equal(("denoise"), &p))
-            {
-                cmdline->denoise = 1;
             } else if (str_equal(("kbps"), &p))
             {
                 cmdline->kbps = atoi(p);
             } else if (str_equal(("maxframes"), &p))
             {
                 cmdline->max_frames = atoi(p);
-            } else if (str_equal(("maxthreads"), &p))
+            } else if (str_equal(("threads"), &p))
             {
-                cmdline->max_threads = atoi(p);
+                cmdline->threads = atoi(p);
+            } else if (str_equal(("speed"), &p))
+            {
+                cmdline->speed = atoi(p);
+            } else if (str_equal(("denoise"), &p))
+            {
+                cmdline->denoise = 1;
+            } else if (str_equal(("stats"), &p))
+            {
+                cmdline->stats = 1;
+            } else if (str_equal(("psnr"), &p))
+            {
+                cmdline->psnr = 1;
             } else
             {
                 printf("ERROR: Unknown option %s\n", p - 1);
                 return 0;
             }
-        } else if (!cmdline->input_file)
+        } else if (!cmdline->input_file && !cmdline->gen)
         {
             cmdline->input_file = p;
         } else if (!cmdline->output_file)
@@ -184,25 +185,31 @@ static int read_cmdline_options(int argc, char *argv[])
             return 0;
         }
     }
-    if (!cmdline->input_file)
+    if (!cmdline->input_file && !cmdline->gen)
     {
-        printf("Usage:\n");
-        printf("    h264e_test <input.yuv> <input.264> [options]\n");
-        printf("Options:\n");
-        printf("    -bjm<file>      - reference bjm\n");
-        printf("    -qop<n>         - key frame period >= 0\n");
-        printf("    -qp<n>          - set QP [10..51]\n");
-        printf("    -kbps<n>        - set bitrate (fps=30 assumed)\n");
-        printf("    -maxframes<n>   - encode no more than given number of frames\n");
-        printf("    -speed<n>       - speed [0..10], 0 means best quality\n");
-        printf("    -denoise        - use temporal noise supression\n");
+        printf("Usage:\n"
+               "    h264e_test [options] <input[frame_size].yuv> <output.264>\n"
+               "Frame size can be: WxH sqcif qvga svga 4vga sxga xga vga qcif 4cif\n"
+               "    4sif cif sif pal ntsc d1 16cif 16sif 720p 4SVGA 4XGA 16VGA 16VGA\n"
+               "Options:\n"
+               "    -gen            - generate input instead of passing <input.yuv>\n"
+               "    -qop<n>         - key frame period >= 0\n"
+               "    -qp<n>          - set QP [10..51]\n"
+               "    -kbps<n>        - set bitrate (fps=30 assumed)\n"
+               "    -maxframes<n>   - encode no more than given number of frames\n"
+               "    -threads<n>     - use <n> threads for encode\n"
+               "    -speed<n>       - speed [0..10], 0 means best quality\n"
+               "    -denoise        - use temporal noise supression\n"
+               "    -stats          - print frame statistics\n"
+               "    -psnr           - print psnr statistics\n");
+        return 0;
     }
-    return !!cmdline->input_file;
+    return 1;
 }
 
 typedef struct
 {
-    const char * size_name;
+    const char *size_name;
     int g_w;
     int h;
 } frame_size_descriptor_t;
@@ -253,9 +260,9 @@ static int guess_format_from_name(const char *file_name, int *w, int *h)
         {
             char * end;
             int width = strtoul(p, &end, 10);
-            if (width && (*end == 'x' || *end == 'X') && (end[1] >= '1' && end[1] <= '9') )
+            if (width && (*end == 'x' || *end == 'X') && (end[1] >= '1' && end[1] <= '9'))
             {
-                int height = strtoul(end+1, &end, 10);
+                int height = strtoul(end + 1, &end, 10);
                 if (height)
                 {
                     *w = width;
@@ -281,10 +288,6 @@ static int guess_format_from_name(const char *file_name, int *w, int *h)
     }
     return found;
 }
-
-#if ENABLE_PSNR
-
-#include <math.h>
 
 // PSNR estimation results
 typedef struct
@@ -361,19 +364,18 @@ static void psnr_print(rd_t rd)
     printf("  %6.3f db/lgrate ", rd.psnr_to_logkbps_ratio);
     printf("  \n");
 }
-#endif
 
 static int pixel_of_chessboard(double x, double y, int w, int h)
 {
 #if 0
-    int mid = (fabs(x ) < 4 && fabs(y) < 4);
+    int mid = (fabs(x) < 4 && fabs(y) < 4);
     int i = (int)(x);
     int j = (int)(y);
-    int cx,cy;
+    int cx, cy;
     cx = (i & 16) ? 255 : 0;
     cy = (j & 16) ? 255 : 0;
-    if ((i&15) == 0) cx *= (x-i);
-    if ((j&15) == 0) cx *= (y-j);
+    if ((i & 15) == 0) cx *= (x - i);
+    if ((j & 15) == 0) cx *= (y - j);
     return (cx + cy + 1) >> 1;
 #else
     int mid = (fabs(x ) < 4 && fabs(y) < 4);
@@ -412,46 +414,40 @@ static void gen_chessboard_rot(unsigned char *p, int w, int h, int frm)
 
 int main(int argc, char *argv[])
 {
-    int i;
+    int i, frames;
     const char *fnin, *fnout;
 
-    read_cmdline_options (argc, argv);
+    if (!read_cmdline_options(argc, argv))
+        return 1;
     fnin  = cmdline->input_file;
     fnout = cmdline->output_file;
-    if (!fnin)
+
+    if (!cmdline->gen)
     {
-        fnin = "vectors/foreman.cif";
+        g_w = 352;
+        g_h = 288;
+        guess_format_from_name(fnin, &g_w, &g_h);
+        fin = fopen(fnin, "rb");
+        if (!fin)
+        {
+            printf("ERROR: cant open input file %s\n", fnin);
+            return 1;
+        }
+    } else
+    {
+        g_w = 1024;
+        g_h = 768;
     }
+
     if (!fnout)
-    {
         fnout = "out.264";
-    }
-    if (fnout)
-    {
-        fout = fopen(fnout, "wb");
-    }
-
-#if GENERATE_INPUT
-    g_w = 1024;
-    g_h = 768;
-#else
-    fin = fopen(fnin, "rb");
-
-    if (!fin)
-    {
-        printf("ERROR: cant open input file %s\n", fnin);
-        return 1;
-    }
-    if (!fout && fnout)
+    fout = fopen(fnout, "wb");
+    if (!fout)
     {
         printf("ERROR: cant open output file %s\n", fnout);
         return 1;
     }
 
-    g_w = 352;
-    g_h = 288;
-    guess_format_from_name(fnin, &g_w, &g_h);
-#endif
     create_param.enableNEON = 1;
 #if H264E_SVC_API
     create_param.num_layers = 1;
@@ -473,17 +469,14 @@ int main(int argc, char *argv[])
     create_param.temporal_denoise_flag = cmdline->denoise;
     //create_param.vbv_size_bytes = 1500000/8;
 
-#if ENABLE_PSNR
-    create_param.const_input_flag = 0;
-#else
-    create_param.const_input_flag = 1; // for not multiple of 16
-#endif
+    create_param.const_input_flag = cmdline->psnr ? 0 : 1;
+
 #if H264E_MAX_THREADS
     void *thread_pool = NULL;
-    create_param.max_threads = cmdline->max_threads;
-    if (cmdline->max_threads)
+    create_param.max_threads = cmdline->threads;
+    if (cmdline->threads)
     {
-        thread_pool = h264e_thread_pool_init(cmdline->max_threads);
+        thread_pool = h264e_thread_pool_init(cmdline->threads);
         create_param.token = thread_pool;
         create_param.run_func_in_thread = h264e_thread_pool_run;
     }
@@ -493,142 +486,141 @@ int main(int argc, char *argv[])
     buf_in   = (uint8_t*)aligned_alloc(64, frame_size);
     buf_save = (uint8_t*)aligned_alloc(64, frame_size);
 
-    if (buf_in && buf_save)
+    if (!buf_in || !buf_save)
     {
-        //for (cmdline->qp = 10; cmdline->qp <= 51; cmdline->qp += 10)
-        //for (cmdline->qp = 40; cmdline->qp <= 51; cmdline->qp += 10)
-        //for (cmdline->qp = 50; cmdline->qp <= 51; cmdline->qp += 2)
-        //printf("encoding %s to %s with qp = %d\n", fnin, fnout, cmdline->qp);
-        {
-            int sum_bytes = 0;
-            int max_bytes = 0;
-            int min_bytes = 10000000;
-            int sizeof_persist, sizeof_scratch, error;
-            H264E_persist_t *enc = NULL;
-            H264E_scratch_t *scratch = NULL;
-#if ENABLE_PSNR
+        printf("ERROR: not enough memory\n");
+        return 1;
+    }
+    //for (cmdline->qp = 10; cmdline->qp <= 51; cmdline->qp += 10)
+    //for (cmdline->qp = 40; cmdline->qp <= 51; cmdline->qp += 10)
+    //for (cmdline->qp = 50; cmdline->qp <= 51; cmdline->qp += 2)
+    //printf("encoding %s to %s with qp = %d\n", fnin, fnout, cmdline->qp);
+    {
+        int sum_bytes = 0;
+        int max_bytes = 0;
+        int min_bytes = 10000000;
+        int sizeof_persist, sizeof_scratch, error;
+        H264E_persist_t *enc = NULL;
+        H264E_scratch_t *scratch = NULL;
+        if (cmdline->psnr)
             psnr_init();
-#endif
 
-            error = H264E_sizeof(&create_param, &sizeof_persist, &sizeof_scratch);
-            if (!error)
-            {
-                printf("sizeof_persist = %d sizeof_scratch = %d\n", sizeof_persist, sizeof_scratch);
-                enc     = (H264E_persist_t *)aligned_alloc(64, sizeof_persist);
-                scratch = (H264E_scratch_t *)aligned_alloc(64, sizeof_scratch);
-                error = H264E_init(enc, &create_param);
-            }
-            if (error)
-            {
-                printf("H264E_init error = %d\n", error);
-                return 0;
-            }
+        error = H264E_sizeof(&create_param, &sizeof_persist, &sizeof_scratch);
+        if (!error)
+        {
+            printf("sizeof_persist = %d sizeof_scratch = %d\n", sizeof_persist, sizeof_scratch);
+            enc     = (H264E_persist_t *)aligned_alloc(64, sizeof_persist);
+            scratch = (H264E_scratch_t *)aligned_alloc(64, sizeof_scratch);
+            error = H264E_init(enc, &create_param);
+        }
+        if (error)
+        {
+            printf("H264E_init error = %d\n", error);
+            return 0;
+        }
 
-            if (fin)
-                fseek(fin, 0, SEEK_SET);
-            printf("cmdline->max_frames = %d\n", cmdline->max_frames);
+        if (fin)
+            fseek(fin, 0, SEEK_SET);
 
-            for (i = 0; cmdline->max_frames; i++)
+        for (i = 0; cmdline->max_frames; i++)
+        {
+            if (!fin)
             {
-#if GENERATE_INPUT
-                if (i > 100) break;
+                if (i > 300) break;
                 memset(buf_in + g_w*g_h, 128, g_w*g_h/2);
                 gen_chessboard_rot(buf_in, g_w, g_h, i);
-#else
+            } else
                 if (!fread(buf_in, frame_size, 1, fin)) break;
-#endif
-#if ENABLE_PSNR
+            if (cmdline->psnr)
                 memcpy(buf_save, buf_in, frame_size);
-#endif
-                yuv.yuv[0] = buf_in; yuv.stride[0] = g_w;
-                yuv.yuv[1] = buf_in + g_w*g_h; yuv.stride[1] = g_w/2;
-                yuv.yuv[2] = buf_in + g_w*g_h*5/4; yuv.stride[2] = g_w/2;
 
-                run_param.frame_type = 0;
-                run_param.encode_speed = cmdline->speed;
-                //run_param.desired_nalu_bytes = 100;
+            yuv.yuv[0] = buf_in; yuv.stride[0] = g_w;
+            yuv.yuv[1] = buf_in + g_w*g_h; yuv.stride[1] = g_w/2;
+            yuv.yuv[2] = buf_in + g_w*g_h*5/4; yuv.stride[2] = g_w/2;
 
-                if (cmdline->kbps)
-                {
-                    run_param.desired_frame_bytes = cmdline->kbps*1000/8/30;
-                    run_param.qp_min = 10;
-                    run_param.qp_max = 50;
-                } else
-                {
-                    run_param.qp_min = run_param.qp_max = cmdline->qp;
-                }
+            run_param.frame_type = 0;
+            run_param.encode_speed = cmdline->speed;
+            //run_param.desired_nalu_bytes = 100;
+
+            if (cmdline->kbps)
+            {
+                run_param.desired_frame_bytes = cmdline->kbps*1000/8/30;
+                run_param.qp_min = 10;
+                run_param.qp_max = 50;
+            } else
+            {
+                run_param.qp_min = run_param.qp_max = cmdline->qp;
+            }
 
 #if ENABLE_TEMPORAL_SCALABILITY
-{
-                int level, logmod = 1;
-                int j, mod = 1 << logmod;
-                static int fresh[200] = {-1,-1,-1,-1};
+            {
+            int level, logmod = 1;
+            int j, mod = 1 << logmod;
+            static int fresh[200] = {-1,-1,-1,-1};
 
-                run_param.frame_type = H264E_FRAME_TYPE_CUSTOM;
+            run_param.frame_type = H264E_FRAME_TYPE_CUSTOM;
 
-                for (level = logmod; level && (~i & (mod >> level)); level--){}
+            for (level = logmod; level && (~i & (mod >> level)); level--){}
 
-                run_param.long_term_idx_update = level + 1;
-                if (level == logmod && logmod > 0)
-                    run_param.long_term_idx_update = -1;
-                if (level == logmod - 1 && logmod > 1)
-                    run_param.long_term_idx_update = 0;
+            run_param.long_term_idx_update = level + 1;
+            if (level == logmod && logmod > 0)
+                run_param.long_term_idx_update = -1;
+            if (level == logmod - 1 && logmod > 1)
+                run_param.long_term_idx_update = 0;
 
-                //if (run_param.long_term_idx_update > logmod) run_param.long_term_idx_update -= logmod+1;
-                //run_param.long_term_idx_update = logmod - 0 - level;
-                //if (run_param.long_term_idx_update > 0)
-                //{
-                //    run_param.long_term_idx_update = logmod - run_param.long_term_idx_update;
-                //}
-                run_param.long_term_idx_use    = fresh[level];
-                for (j = level; j <= logmod; j++)
-                {
-                    fresh[j] = run_param.long_term_idx_update;
-                }
-                if (!i)
-                {
-                    run_param.long_term_idx_use = -1;
-                }
-}
-#endif
-                //static int frame;
-                //printf("encoding frame %d\n", frame++);
-                error = H264E_encode(enc, scratch, &run_param, &yuv, &coded_data, &sizeof_coded_data);
-
-                assert(!error);
-
-                if (i)
-                {
-                    sum_bytes += sizeof_coded_data - 4;
-                    if (min_bytes > sizeof_coded_data - 4) min_bytes = sizeof_coded_data - 4;
-                    if (max_bytes < sizeof_coded_data - 4) max_bytes = sizeof_coded_data - 4;
-                }
-
-                if (fout)
-                {
-                    if (!fwrite(coded_data, sizeof_coded_data, 1, fout))
-                    {
-                        printf("ERROR writing output file\n");
-                        break;
-                    }
-                }
-#if ENABLE_PSNR
-                psnr_add(buf_save, buf_in, g_w, g_h, sizeof_coded_data);
-#endif
+            //if (run_param.long_term_idx_update > logmod) run_param.long_term_idx_update -= logmod+1;
+            //run_param.long_term_idx_update = logmod - 0 - level;
+            //if (run_param.long_term_idx_update > 0)
+            //{
+            //    run_param.long_term_idx_update = logmod - run_param.long_term_idx_update;
+            //}
+            run_param.long_term_idx_use    = fresh[level];
+            for (j = level; j <= logmod; j++)
+            {
+                fresh[j] = run_param.long_term_idx_update;
             }
-            //fprintf(stderr, "%d avr = %6d  [%6d %6d]\n", qp, sum_bytes/299, min_bytes, max_bytes);
-
-#if ENABLE_PSNR
-            psnr_print(psnr_get());
+            if (!i)
+            {
+                run_param.long_term_idx_use = -1;
+            }
+            }
 #endif
-            if (enc)
-                free(enc);
-            if (scratch)
-                free(scratch);
+            error = H264E_encode(enc, scratch, &run_param, &yuv, &coded_data, &sizeof_coded_data);
+            assert(!error);
+
+            if (i)
+            {
+                sum_bytes += sizeof_coded_data - 4;
+                if (min_bytes > sizeof_coded_data - 4) min_bytes = sizeof_coded_data - 4;
+                if (max_bytes < sizeof_coded_data - 4) max_bytes = sizeof_coded_data - 4;
+            }
+
+            if (cmdline->stats)
+                printf("frame=%d, bytes=%d\n", frames++, sizeof_coded_data);
+
+            if (fout)
+            {
+                if (!fwrite(coded_data, sizeof_coded_data, 1, fout))
+                {
+                    printf("ERROR writing output file\n");
+                    break;
+                }
+            }
+            if (cmdline->psnr)
+                psnr_add(buf_save, buf_in, g_w, g_h, sizeof_coded_data);
         }
-        free(buf_in);
-        free(buf_save);
+        //fprintf(stderr, "%d avr = %6d  [%6d %6d]\n", qp, sum_bytes/299, min_bytes, max_bytes);
+
+        if (cmdline->psnr)
+            psnr_print(psnr_get());
+
+        if (enc)
+            free(enc);
+        if (scratch)
+            free(scratch);
     }
+    free(buf_in);
+    free(buf_save);
 
     if (fin)
         fclose(fin);
@@ -637,7 +629,7 @@ int main(int argc, char *argv[])
 #if H264E_MAX_THREADS
     if (thread_pool)
     {
-        h264e_thread_pool_close(thread_pool, cmdline->max_threads);
+        h264e_thread_pool_close(thread_pool, cmdline->threads);
     }
 #endif
     return 0;

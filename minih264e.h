@@ -8763,7 +8763,7 @@ static void pix_copy_recon_pic_to_ref(h264e_enc_t *enc)
             SWAP(pix_t*, enc->ref.yuv[c], enc->dec.yuv[c]);
         } else
         {
-            pix_copy_pic(enc->ref.yuv[c], w+2*guard, enc->dec.yuv[c], w, w, h);
+            pix_copy_pic(enc->ref.yuv[c], w + 2*guard, enc->dec.yuv[c], w, w, h);
         }
 
         h264e_copy_borders(enc->ref.yuv[c], w, h, guard);
