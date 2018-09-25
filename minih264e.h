@@ -3198,7 +3198,7 @@ static int h264e_transform_sub_quant_dequant_sse2(const pix_t *inp, const pix_t 
     crow = mode >> 1;
     ccol = crow;
 
-    if (mode&1) // QDQ_MODE_INTRA_16 || QDQ_MODE_CHROMA
+    if (mode & 1) // QDQ_MODE_INTRA_16 || QDQ_MODE_CHROMA
     {
         int cloop = (mode >> 1)*(mode >> 1);
         short *dc = ((short *)q) - 16;
@@ -5323,10 +5323,9 @@ static int h264e_quant_chroma_dc_neon(quant_t *q, int16_t *deq, const uint16_t *
 
 static void FwdTransformResidual4x42_neon(const uint8_t *inp, const uint8_t *pred, uint32_t inp_stride, int16_t *out)
 {
-//    int i;
-//    int16_t tmp[16];
-
 #if TRANSPOSE_BLOCK
+    int i;
+    int16_t tmp[16];
     // Transform columns
     for (i = 0; i < 4; i++, pred++, inp++)
     {
@@ -5345,9 +5344,7 @@ static void FwdTransformResidual4x42_neon(const uint8_t *inp, const uint8_t *pre
         int d3 = tmp[i + 12];
         TRANSFORM(d0, d1, d2, d3, out + i, 4);
     }
-
 #else
-
     /* Transform rows */
     uint8x8_t inp0  = vreinterpret_u8_s32(vtrn_s32(vreinterpret_s32_u8(vld1_u8(inp)),  vreinterpret_s32_u8(vld1_u8(inp + inp_stride))).val[0]);
     uint8x8_t inp1  = vreinterpret_u8_s32(vtrn_s32(vreinterpret_s32_u8(vld1_u8(inp + 2*inp_stride)), vreinterpret_s32_u8(vld1_u8(inp + 3*inp_stride))).val[0]);
