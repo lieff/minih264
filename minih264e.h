@@ -7335,6 +7335,8 @@ static void h264e_vlc_encode(bs_t *bs, int16_t *quant, int maxNumCoeff, uint8_t 
     int cloop = maxNumCoeff;
     BS_OPEN(bs)
 
+#if H264E_ENABLE_SSE2
+    // this branch used with SSE + C configuration
     int16_t zzquant[16];
     levels = zzquant + ((maxNumCoeff == 4) ? 4 : 16);
     if (maxNumCoeff != 4)
@@ -7386,6 +7388,22 @@ static void h264e_vlc_encode(bs_t *bs, int16_t *quant, int maxNumCoeff, uint8_t 
     }
     quant = zzquant + ((maxNumCoeff == 4) ? 4 : 16);
     nnz = (int)(quant - levels);
+#else
+    quant += (maxNumCoeff == 4) ? 4 : 16;
+    levels = quant;
+    do
+    {
+        int v = *--quant;
+        if (v <<= 1)
+        {
+            *--levels = v;
+            *prun++ = cloop;
+        }
+    } while (--cloop);
+    quant += maxNumCoeff;
+    nnz = quant - levels;
+#endif
+
     if (nnz)
     {
         cloop = MIN(3, nnz);
@@ -7833,11 +7851,7 @@ static void h264e_intra_upsampling(int srcw, int srch, int dstw, int dsth, int i
 #   define h264e_bs_init_bits_neon        h264e_bs_init_bits
 #   define h264e_vlc_encode_neon          h264e_vlc_encode
 
-#   define h264e_transform_add_neon                  h264e_transform_add
-#   define h264e_transform_sub_quant_dequant_neon    h264e_transform_sub_quant_dequant
-#   define h264e_quant_luma_dc_neon                  h264e_quant_luma_dc
-#   define h264e_quant_chroma_dc_neon                h264e_quant_chroma_dc
-#   define h264e_copy_borders_neon                   h264e_copy_borders
+#   define h264e_copy_borders_neon        h264e_copy_borders
 #endif
 
 /************************************************************************/
