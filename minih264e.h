@@ -691,7 +691,7 @@ typedef struct H264E_persist_tag
         //    uint16_t qfull[8];
         //    uint16_t dqfull[8];
         //} qdat[2];
-        uint16_t qdat [2][6 + 2 + 2 + 8 + 8 + 8 + 8];
+        uint16_t qdat[2][6 + 2 + 2 + 8 + 8 + 8 + 8];
     } rc;
 
     deblock_filter_t df;            // Deblock filter
@@ -725,11 +725,6 @@ typedef struct H264E_persist_tag
     // Consecutive IDR's must have different idr_pic_id,
     // unless there are some P between them
     uint8_t next_idr_pic_id;
-
-    struct
-    {
-        int frm_cnt;
-    } dbg;
 
     pix_t *pbest;                   // Macroblock best predictor
     pix_t *ptest;                   // Macroblock predictor under test
@@ -766,228 +761,76 @@ typedef struct H264E_persist_tag
 
 const uint8_t h264e_g_run_before[57] =
 {
-15, 17, 20, 24, 29, 35, 42, 42, 42, 42, 42, 42, 42, 42, 42,
-/**** Table #  0 size  2 ****/
-CODE8( 1,  1),
-CODE8( 0,  1),
-/**** Table #  1 size  3 ****/
-CODE8( 1,  1),
-CODE8( 1,  2),
-CODE8( 0,  2),
-/**** Table #  2 size  4 ****/
-CODE8( 3,  2),
-CODE8( 2,  2),
-CODE8( 1,  2),
-CODE8( 0,  2),
-/**** Table #  3 size  5 ****/
-CODE8( 3,  2),
-CODE8( 2,  2),
-CODE8( 1,  2),
-CODE8( 1,  3),
-CODE8( 0,  3),
-/**** Table #  4 size  6 ****/
-CODE8( 3,  2),
-CODE8( 2,  2),
-CODE8( 3,  3),
-CODE8( 2,  3),
-CODE8( 1,  3),
-CODE8( 0,  3),
-/**** Table #  5 size  7 ****/
-CODE8( 3,  2),
-CODE8( 0,  3),
-CODE8( 1,  3),
-CODE8( 3,  3),
-CODE8( 2,  3),
-CODE8( 5,  3),
-CODE8( 4,  3),
-/**** Table #  6 size 15 ****/
-CODE8( 7,  3),
-CODE8( 6,  3),
-CODE8( 5,  3),
-CODE8( 4,  3),
-CODE8( 3,  3),
-CODE8( 2,  3),
-CODE8( 1,  3),
-CODE8( 1,  4),
-CODE8( 1,  5),
-CODE8( 1,  6),
-CODE8( 1,  7),
-CODE8( 1,  8),
-CODE8( 1,  9),
-CODE8( 1, 10),
-CODE8( 1, 11),
+    15, 17, 20, 24, 29, 35, 42, 42, 42, 42, 42, 42, 42, 42, 42,
+    /**** Table #  0 size  2 ****/
+    CODE8(1, 1), CODE8(0, 1),
+    /**** Table #  1 size  3 ****/
+    CODE8(1, 1), CODE8(1, 2), CODE8(0, 2),
+    /**** Table #  2 size  4 ****/
+    CODE8(3, 2), CODE8(2, 2), CODE8(1, 2), CODE8(0, 2),
+    /**** Table #  3 size  5 ****/
+    CODE8(3, 2), CODE8(2, 2), CODE8(1, 2), CODE8(1, 3), CODE8(0, 3),
+    /**** Table #  4 size  6 ****/
+    CODE8(3, 2), CODE8(2, 2), CODE8(3, 3), CODE8(2, 3), CODE8(1, 3), CODE8(0, 3),
+    /**** Table #  5 size  7 ****/
+    CODE8(3, 2), CODE8(0, 3), CODE8(1, 3), CODE8(3, 3), CODE8(2, 3), CODE8(5, 3), CODE8(4, 3),
+    /**** Table #  6 size 15 ****/
+    CODE8(7, 3), CODE8(6, 3), CODE8(5, 3), CODE8(4, 3), CODE8(3, 3), CODE8(2,  3), CODE8(1,  3), CODE8(1, 4),
+    CODE8(1, 5), CODE8(1, 6), CODE8(1, 7), CODE8(1, 8), CODE8(1, 9), CODE8(1, 10), CODE8(1, 11),
 };
 
 const uint8_t h264e_g_total_zeros_cr_2x2[12] =
 {
-3, 7, 10,
-/**** Table #  0 size  4 ****/
-CODE8( 1,  1),
-CODE8( 1,  2),
-CODE8( 1,  3),
-CODE8( 0,  3),
-/**** Table #  1 size  3 ****/
-CODE8( 1,  1),
-CODE8( 1,  2),
-CODE8( 0,  2),
-/**** Table #  2 size  2 ****/
-CODE8( 1,  1),
-CODE8( 0,  1),
+    3, 7, 10,
+    /**** Table #  0 size  4 ****/
+    CODE8(1, 1), CODE8(1, 2), CODE8(1, 3), CODE8(0, 3),
+    /**** Table #  1 size  3 ****/
+    CODE8(1, 1), CODE8(1, 2), CODE8(0, 2),
+    /**** Table #  2 size  2 ****/
+    CODE8(1, 1), CODE8(0, 1),
 };
 
 const uint8_t h264e_g_total_zeros[150] =
 {
-15, 31, 46, 60, 73, 85, 96, 106, 115, 123, 130, 136, 141, 145, 148,
-/**** Table #  0 size 16 ****/
-CODE8( 1,  1),
-CODE8( 3,  3),
-CODE8( 2,  3),
-CODE8( 3,  4),
-CODE8( 2,  4),
-CODE8( 3,  5),
-CODE8( 2,  5),
-CODE8( 3,  6),
-CODE8( 2,  6),
-CODE8( 3,  7),
-CODE8( 2,  7),
-CODE8( 3,  8),
-CODE8( 2,  8),
-CODE8( 3,  9),
-CODE8( 2,  9),
-CODE8( 1,  9),
-/**** Table #  1 size 15 ****/
-CODE8( 7,  3),
-CODE8( 6,  3),
-CODE8( 5,  3),
-CODE8( 4,  3),
-CODE8( 3,  3),
-CODE8( 5,  4),
-CODE8( 4,  4),
-CODE8( 3,  4),
-CODE8( 2,  4),
-CODE8( 3,  5),
-CODE8( 2,  5),
-CODE8( 3,  6),
-CODE8( 2,  6),
-CODE8( 1,  6),
-CODE8( 0,  6),
-/**** Table #  2 size 14 ****/
-CODE8( 5,  4),
-CODE8( 7,  3),
-CODE8( 6,  3),
-CODE8( 5,  3),
-CODE8( 4,  4),
-CODE8( 3,  4),
-CODE8( 4,  3),
-CODE8( 3,  3),
-CODE8( 2,  4),
-CODE8( 3,  5),
-CODE8( 2,  5),
-CODE8( 1,  6),
-CODE8( 1,  5),
-CODE8( 0,  6),
-/**** Table #  3 size 13 ****/
-CODE8( 3,  5),
-CODE8( 7,  3),
-CODE8( 5,  4),
-CODE8( 4,  4),
-CODE8( 6,  3),
-CODE8( 5,  3),
-CODE8( 4,  3),
-CODE8( 3,  4),
-CODE8( 3,  3),
-CODE8( 2,  4),
-CODE8( 2,  5),
-CODE8( 1,  5),
-CODE8( 0,  5),
-/**** Table #  4 size 12 ****/
-CODE8( 5,  4),
-CODE8( 4,  4),
-CODE8( 3,  4),
-CODE8( 7,  3),
-CODE8( 6,  3),
-CODE8( 5,  3),
-CODE8( 4,  3),
-CODE8( 3,  3),
-CODE8( 2,  4),
-CODE8( 1,  5),
-CODE8( 1,  4),
-CODE8( 0,  5),
-/**** Table #  5 size 11 ****/
-CODE8( 1,  6),
-CODE8( 1,  5),
-CODE8( 7,  3),
-CODE8( 6,  3),
-CODE8( 5,  3),
-CODE8( 4,  3),
-CODE8( 3,  3),
-CODE8( 2,  3),
-CODE8( 1,  4),
-CODE8( 1,  3),
-CODE8( 0,  6),
-/**** Table #  6 size 10 ****/
-CODE8( 1,  6),
-CODE8( 1,  5),
-CODE8( 5,  3),
-CODE8( 4,  3),
-CODE8( 3,  3),
-CODE8( 3,  2),
-CODE8( 2,  3),
-CODE8( 1,  4),
-CODE8( 1,  3),
-CODE8( 0,  6),
-/**** Table #  7 size  9 ****/
-CODE8( 1,  6),
-CODE8( 1,  4),
-CODE8( 1,  5),
-CODE8( 3,  3),
-CODE8( 3,  2),
-CODE8( 2,  2),
-CODE8( 2,  3),
-CODE8( 1,  3),
-CODE8( 0,  6),
-/**** Table #  8 size  8 ****/
-CODE8( 1,  6),
-CODE8( 0,  6),
-CODE8( 1,  4),
-CODE8( 3,  2),
-CODE8( 2,  2),
-CODE8( 1,  3),
-CODE8( 1,  2),
-CODE8( 1,  5),
-/**** Table #  9 size  7 ****/
-CODE8( 1,  5),
-CODE8( 0,  5),
-CODE8( 1,  3),
-CODE8( 3,  2),
-CODE8( 2,  2),
-CODE8( 1,  2),
-CODE8( 1,  4),
-/**** Table # 10 size  6 ****/
-CODE8( 0,  4),
-CODE8( 1,  4),
-CODE8( 1,  3),
-CODE8( 2,  3),
-CODE8( 1,  1),
-CODE8( 3,  3),
-/**** Table # 11 size  5 ****/
-CODE8( 0,  4),
-CODE8( 1,  4),
-CODE8( 1,  2),
-CODE8( 1,  1),
-CODE8( 1,  3),
-/**** Table # 12 size  4 ****/
-CODE8( 0,  3),
-CODE8( 1,  3),
-CODE8( 1,  1),
-CODE8( 1,  2),
-/**** Table # 13 size  3 ****/
-CODE8( 0,  2),
-CODE8( 1,  2),
-CODE8( 1,  1),
-/**** Table # 14 size  2 ****/
-CODE8( 0,  1),
-CODE8( 1,  1),
+    15, 31, 46, 60, 73, 85, 96, 106, 115, 123, 130, 136, 141, 145, 148,
+    /**** Table #  0 size 16 ****/
+    CODE8(1, 1), CODE8(3, 3), CODE8(2, 3), CODE8(3, 4), CODE8(2, 4), CODE8(3, 5), CODE8(2, 5), CODE8(3, 6),
+    CODE8(2, 6), CODE8(3, 7), CODE8(2, 7), CODE8(3, 8), CODE8(2, 8), CODE8(3, 9), CODE8(2, 9), CODE8(1, 9),
+    /**** Table #  1 size 15 ****/
+    CODE8(7, 3), CODE8(6, 3), CODE8(5, 3), CODE8(4, 3), CODE8(3, 3), CODE8(5, 4), CODE8(4, 4), CODE8(3, 4),
+    CODE8(2, 4), CODE8(3, 5), CODE8(2, 5), CODE8(3, 6), CODE8(2, 6), CODE8(1, 6), CODE8(0, 6),
+    /**** Table #  2 size 14 ****/
+    CODE8(5, 4), CODE8(7, 3), CODE8(6, 3), CODE8(5, 3), CODE8(4, 4), CODE8(3, 4), CODE8(4, 3), CODE8(3, 3),
+    CODE8(2, 4), CODE8(3, 5), CODE8(2, 5), CODE8(1, 6), CODE8(1, 5), CODE8(0, 6),
+    /**** Table #  3 size 13 ****/
+    CODE8(3, 5), CODE8(7, 3), CODE8(5, 4), CODE8(4, 4), CODE8(6, 3), CODE8(5, 3), CODE8(4, 3), CODE8(3, 4),
+    CODE8(3, 3), CODE8(2, 4), CODE8(2, 5), CODE8(1, 5), CODE8(0, 5),
+    /**** Table #  4 size 12 ****/
+    CODE8(5, 4), CODE8(4, 4), CODE8(3, 4), CODE8(7, 3), CODE8(6, 3), CODE8(5, 3), CODE8(4, 3), CODE8(3, 3),
+    CODE8(2, 4), CODE8(1, 5), CODE8(1, 4), CODE8(0, 5),
+    /**** Table #  5 size 11 ****/
+    CODE8(1, 6), CODE8(1, 5), CODE8(7, 3), CODE8(6, 3), CODE8(5, 3), CODE8(4, 3), CODE8(3, 3), CODE8(2, 3),
+    CODE8(1, 4), CODE8(1, 3), CODE8(0, 6),
+    /**** Table #  6 size 10 ****/
+    CODE8(1, 6), CODE8(1, 5), CODE8(5, 3), CODE8(4, 3), CODE8(3, 3), CODE8(3, 2), CODE8(2, 3), CODE8(1, 4),
+    CODE8(1, 3), CODE8(0, 6),
+    /**** Table #  7 size  9 ****/
+    CODE8(1, 6), CODE8(1, 4), CODE8(1, 5), CODE8(3, 3), CODE8(3, 2), CODE8(2, 2), CODE8(2, 3), CODE8(1, 3),
+    CODE8(0, 6),
+    /**** Table #  8 size  8 ****/
+    CODE8(1, 6), CODE8(0, 6), CODE8(1, 4), CODE8(3, 2), CODE8(2, 2), CODE8(1, 3), CODE8(1, 2), CODE8(1, 5),
+    /**** Table #  9 size  7 ****/
+    CODE8(1, 5), CODE8(0, 5), CODE8(1, 3), CODE8(3, 2), CODE8(2, 2), CODE8(1, 2), CODE8(1, 4),
+    /**** Table # 10 size  6 ****/
+    CODE8(0, 4), CODE8(1, 4), CODE8(1, 3), CODE8(2, 3), CODE8(1, 1), CODE8(3, 3),
+    /**** Table # 11 size  5 ****/
+    CODE8(0, 4), CODE8(1, 4), CODE8(1, 2), CODE8(1, 1), CODE8(1, 3),
+    /**** Table # 12 size  4 ****/
+    CODE8(0, 3), CODE8(1, 3), CODE8(1, 1), CODE8(1, 2),
+    /**** Table # 13 size  3 ****/
+    CODE8(0, 2), CODE8(1, 2), CODE8(1, 1),
+    /**** Table # 14 size  2 ****/
+    CODE8(0, 1), CODE8(1, 1),
 };
 
 const uint8_t h264e_g_coeff_token[277 + 18] =
@@ -997,288 +840,40 @@ const uint8_t h264e_g_coeff_token[277 + 18] =
     147 + 18, 147 + 18, 147 + 18, 147 + 18,
     212 + 18, 212 + 18, 212 + 18, 212 + 18, 212 + 18, 212 + 18, 212 + 18, 212 + 18, 212 + 18,
     0 + 18,
-/**** Table #  4 size 17 ****/     // offs: 0
-CODE( 1,  2),
-CODE( 1,  1),
-CODE( 1,  3),
-CODE( 5,  6),
-CODE( 7,  6),
-CODE( 6,  6),
-CODE( 2,  7),
-CODE( 0,  7),
-CODE( 4,  6),
-CODE( 3,  7),
-CODE( 2,  8),
-CODE( 0,  0),
-CODE( 3,  6),
-CODE( 3,  8),
-CODE( 0,  0),
-CODE( 0,  0),
-CODE( 2,  6),
-/**** Table #  0 size 65 ****/     // offs: 17
-CODE( 1,  1),
-CODE( 1,  2),
-CODE( 1,  3),
-CODE( 3,  5),
-CODE( 5,  6),
-CODE( 4,  6),
-CODE( 5,  7),
-CODE( 3,  6),
-CODE( 7,  8),
-CODE( 6,  8),
-CODE( 5,  8),
-CODE( 4,  7),
-CODE( 7,  9),
-CODE( 6,  9),
-CODE( 5,  9),
-CODE( 4,  8),
-CODE( 7, 10),
-CODE( 6, 10),
-CODE( 5, 10),
-CODE( 4,  9),
-CODE( 7, 11),
-CODE( 6, 11),
-CODE( 5, 11),
-CODE( 4, 10),
-CODE(15, 13),
-CODE(14, 13),
-CODE(13, 13),
-CODE( 4, 11),
-CODE(11, 13),
-CODE(10, 13),
-CODE( 9, 13),
-CODE(12, 13),
-CODE( 8, 13),
-CODE(14, 14),
-CODE(13, 14),
-CODE(12, 14),
-CODE(15, 14),
-CODE(10, 14),
-CODE( 9, 14),
-CODE( 8, 14),
-CODE(11, 14),
-CODE(14, 15),
-CODE(13, 15),
-CODE(12, 15),
-CODE(15, 15),
-CODE(10, 15),
-CODE( 9, 15),
-CODE( 8, 15),
-CODE(11, 15),
-CODE( 1, 15),
-CODE(13, 16),
-CODE(12, 16),
-CODE(15, 16),
-CODE(14, 16),
-CODE( 9, 16),
-CODE( 8, 16),
-CODE(11, 16),
-CODE(10, 16),
-CODE( 5, 16),
-CODE( 0,  0),
-CODE( 7, 16),
-CODE( 6, 16),
-CODE( 0,  0),
-CODE( 0,  0),
-CODE( 4, 16),
-/**** Table #  1 size 65 ****/     // offs: 82
-CODE( 3,  2),
-CODE( 2,  2),
-CODE( 3,  3),
-CODE( 5,  4),
-CODE(11,  6),
-CODE( 7,  5),
-CODE( 9,  6),
-CODE( 4,  4),
-CODE( 7,  6),
-CODE(10,  6),
-CODE( 5,  6),
-CODE( 6,  5),
-CODE( 7,  7),
-CODE( 6,  6),
-CODE( 5,  7),
-CODE( 8,  6),
-CODE( 7,  8),
-CODE( 6,  7),
-CODE( 5,  8),
-CODE( 4,  6),
-CODE( 4,  8),
-CODE( 6,  8),
-CODE( 5,  9),
-CODE( 4,  7),
-CODE( 7,  9),
-CODE( 6,  9),
-CODE(13, 11),
-CODE( 4,  9),
-CODE(15, 11),
-CODE(14, 11),
-CODE( 9, 11),
-CODE(12, 11),
-CODE(11, 11),
-CODE(10, 11),
-CODE(13, 12),
-CODE( 8, 11),
-CODE(15, 12),
-CODE(14, 12),
-CODE( 9, 12),
-CODE(12, 12),
-CODE(11, 12),
-CODE(10, 12),
-CODE(13, 13),
-CODE(12, 13),
-CODE( 8, 12),
-CODE(14, 13),
-CODE( 9, 13),
-CODE( 8, 13),
-CODE(15, 13),
-CODE(10, 13),
-CODE( 6, 13),
-CODE( 1, 13),
-CODE(11, 13),
-CODE(11, 14),
-CODE(10, 14),
-CODE( 4, 14),
-CODE( 7, 13),
-CODE( 8, 14),
-CODE( 5, 14),
-CODE( 0,  0),
-CODE( 9, 14),
-CODE( 6, 14),
-CODE( 0,  0),
-CODE( 0,  0),
-CODE( 7, 14),
-/**** Table #  2 size 65 ****/     // offs: 147
-CODE(15,  4),
-CODE(14,  4),
-CODE(13,  4),
-CODE(12,  4),
-CODE(15,  6),
-CODE(15,  5),
-CODE(14,  5),
-CODE(11,  4),
-CODE(11,  6),
-CODE(12,  5),
-CODE(11,  5),
-CODE(10,  4),
-CODE( 8,  6),
-CODE(10,  5),
-CODE( 9,  5),
-CODE( 9,  4),
-CODE(15,  7),
-CODE( 8,  5),
-CODE(13,  6),
-CODE( 8,  4),
-CODE(11,  7),
-CODE(14,  6),
-CODE( 9,  6),
-CODE(13,  5),
-CODE( 9,  7),
-CODE(10,  6),
-CODE(13,  7),
-CODE(12,  6),
-CODE( 8,  7),
-CODE(14,  7),
-CODE(10,  7),
-CODE(12,  7),
-CODE(15,  8),
-CODE(14,  8),
-CODE(13,  8),
-CODE(12,  8),
-CODE(11,  8),
-CODE(10,  8),
-CODE( 9,  8),
-CODE( 8,  8),
-CODE(15,  9),
-CODE(14,  9),
-CODE(13,  9),
-CODE(12,  9),
-CODE(11,  9),
-CODE(10,  9),
-CODE( 9,  9),
-CODE(10, 10),
-CODE( 8,  9),
-CODE( 7,  9),
-CODE(11, 10),
-CODE( 6, 10),
-CODE(13, 10),
-CODE(12, 10),
-CODE( 7, 10),
-CODE( 2, 10),
-CODE( 9, 10),
-CODE( 8, 10),
-CODE( 3, 10),
-CODE( 0,  0),
-CODE( 5, 10),
-CODE( 4, 10),
-CODE( 0,  0),
-CODE( 0,  0),
-CODE( 1, 10),
-/**** Table #  3 size 65 ****/     // offs: 212
- 3,
- 1,
- 6,
-11,
- 0,
- 5,
-10,
-15,
- 4,
- 9,
-14,
-19,
- 8,
-13,
-18,
-23,
-12,
-17,
-22,
-27,
-16,
-21,
-26,
-31,
-20,
-25,
-30,
-35,
-24,
-29,
-34,
-39,
-28,
-33,
-38,
-43,
-32,
-37,
-42,
-47,
-36,
-41,
-46,
-51,
-40,
-45,
-50,
-55,
-44,
-49,
-54,
-59,
-48,
-53,
-58,
-63,
-52,
-57,
-62,
- 0,
-56,
-61,
- 0,
- 0,
-60
+    /**** Table #  4 size 17 ****/     // offs: 0
+    CODE(1, 2), CODE(1, 1), CODE(1, 3), CODE(5, 6), CODE(7, 6), CODE(6, 6), CODE(2, 7), CODE(0, 7), CODE(4, 6),
+    CODE(3, 7), CODE(2, 8), CODE(0, 0), CODE(3, 6), CODE(3, 8), CODE(0, 0), CODE(0, 0), CODE(2, 6),
+    /**** Table #  0 size 65 ****/     // offs: 17
+    CODE( 1,  1), CODE( 1,  2), CODE( 1,  3), CODE( 3,  5), CODE( 5,  6), CODE( 4,  6), CODE( 5,  7), CODE( 3,  6),
+    CODE( 7,  8), CODE( 6,  8), CODE( 5,  8), CODE( 4,  7), CODE( 7,  9), CODE( 6,  9), CODE( 5,  9), CODE( 4,  8),
+    CODE( 7, 10), CODE( 6, 10), CODE( 5, 10), CODE( 4,  9), CODE( 7, 11), CODE( 6, 11), CODE( 5, 11), CODE( 4, 10),
+    CODE(15, 13), CODE(14, 13), CODE(13, 13), CODE( 4, 11), CODE(11, 13), CODE(10, 13), CODE( 9, 13), CODE(12, 13),
+    CODE( 8, 13), CODE(14, 14), CODE(13, 14), CODE(12, 14), CODE(15, 14), CODE(10, 14), CODE( 9, 14), CODE( 8, 14),
+    CODE(11, 14), CODE(14, 15), CODE(13, 15), CODE(12, 15), CODE(15, 15), CODE(10, 15), CODE( 9, 15), CODE( 8, 15),
+    CODE(11, 15), CODE( 1, 15), CODE(13, 16), CODE(12, 16), CODE(15, 16), CODE(14, 16), CODE( 9, 16), CODE( 8, 16),
+    CODE(11, 16), CODE(10, 16), CODE( 5, 16), CODE( 0,  0), CODE( 7, 16), CODE( 6, 16), CODE( 0,  0), CODE( 0,  0), CODE( 4, 16),
+    /**** Table #  1 size 65 ****/     // offs: 82
+    CODE( 3,  2), CODE( 2,  2), CODE( 3,  3), CODE( 5,  4), CODE(11,  6), CODE( 7,  5), CODE( 9,  6), CODE( 4,  4),
+    CODE( 7,  6), CODE(10,  6), CODE( 5,  6), CODE( 6,  5), CODE( 7,  7), CODE( 6,  6), CODE( 5,  7), CODE( 8,  6),
+    CODE( 7,  8), CODE( 6,  7), CODE( 5,  8), CODE( 4,  6), CODE( 4,  8), CODE( 6,  8), CODE( 5,  9), CODE( 4,  7),
+    CODE( 7,  9), CODE( 6,  9), CODE(13, 11), CODE( 4,  9), CODE(15, 11), CODE(14, 11), CODE( 9, 11), CODE(12, 11),
+    CODE(11, 11), CODE(10, 11), CODE(13, 12), CODE( 8, 11), CODE(15, 12), CODE(14, 12), CODE( 9, 12), CODE(12, 12),
+    CODE(11, 12), CODE(10, 12), CODE(13, 13), CODE(12, 13), CODE( 8, 12), CODE(14, 13), CODE( 9, 13), CODE( 8, 13),
+    CODE(15, 13), CODE(10, 13), CODE( 6, 13), CODE( 1, 13), CODE(11, 13), CODE(11, 14), CODE(10, 14), CODE( 4, 14),
+    CODE( 7, 13), CODE( 8, 14), CODE( 5, 14), CODE( 0,  0), CODE( 9, 14), CODE( 6, 14), CODE( 0,  0), CODE( 0,  0), CODE( 7, 14),
+    /**** Table #  2 size 65 ****/     // offs: 147
+    CODE(15,  4), CODE(14,  4), CODE(13,  4), CODE(12,  4), CODE(15,  6), CODE(15,  5), CODE(14,  5), CODE(11,  4),
+    CODE(11,  6), CODE(12,  5), CODE(11,  5), CODE(10,  4), CODE( 8,  6), CODE(10,  5), CODE( 9,  5), CODE( 9,  4),
+    CODE(15,  7), CODE( 8,  5), CODE(13,  6), CODE( 8,  4), CODE(11,  7), CODE(14,  6), CODE( 9,  6), CODE(13,  5),
+    CODE( 9,  7), CODE(10,  6), CODE(13,  7), CODE(12,  6), CODE( 8,  7), CODE(14,  7), CODE(10,  7), CODE(12,  7),
+    CODE(15,  8), CODE(14,  8), CODE(13,  8), CODE(12,  8), CODE(11,  8), CODE(10,  8), CODE( 9,  8), CODE( 8,  8),
+    CODE(15,  9), CODE(14,  9), CODE(13,  9), CODE(12,  9), CODE(11,  9), CODE(10,  9), CODE( 9,  9), CODE(10, 10),
+    CODE( 8,  9), CODE( 7,  9), CODE(11, 10), CODE( 6, 10), CODE(13, 10), CODE(12, 10), CODE( 7, 10), CODE( 2, 10),
+    CODE( 9, 10), CODE( 8, 10), CODE( 3, 10), CODE( 0,  0), CODE( 5, 10), CODE( 4, 10), CODE( 0,  0), CODE( 0,  0), CODE( 1, 10),
+    /**** Table #  3 size 65 ****/     // offs: 212
+     3,  1,  6, 11,  0,  5, 10, 15,  4,  9, 14, 19,  8, 13, 18, 23, 12, 17, 22, 27, 16, 21, 26, 31, 20, 25, 30, 35,
+    24, 29, 34, 39, 28, 33, 38, 43, 32, 37, 42, 47, 36, 41, 46, 51, 40, 45, 50, 55, 44, 49, 54, 59, 48, 53, 58, 63,
+    52, 57, 62,  0, 56, 61,  0,  0, 60
 };
 
 /*
@@ -1576,6 +1171,7 @@ static void h264e_bs_put_golomb_sse2(bs_t *bs, unsigned val)
 #endif
     h264e_bs_put_bits_sse2(bs, 2*size - 1, val + 1);
 }
+
 /**
 *   signed Golomb code.
 *   mapping to unsigned code:
@@ -1602,7 +1198,7 @@ static void h264e_bs_init_bits_sse2(bs_t *bs, void *data)
     bs->cache = 0;
 }
 
-#define BS_OPEN(bs) uint32_t cache = bs->cache; int shift = bs->shift; uint32_t * buf = bs->buf;
+#define BS_OPEN(bs) uint32_t cache = bs->cache; int shift = bs->shift; uint32_t *buf = bs->buf;
 #define BS_CLOSE(bs) bs->cache = cache; bs->shift = shift; bs->buf = buf;
 #define BS_PUT(n, val)      \
 if ((shift -= n) < 0)       \
@@ -1634,7 +1230,7 @@ static void h264e_vlc_encode_sse2(bs_t *bs, int16_t *quant, int maxNumCoeff, uin
     uint8_t *prun = runs;
     int16_t *levels;
     int cloop = maxNumCoeff;
-    int v,drun;
+    int v, drun;
     unsigned zmask;
     BS_OPEN(bs)
 
@@ -2435,16 +2031,16 @@ static uint32_t intra_predict_dc_sse(const pix_t *left, const pix_t *top, int lo
     return dc * 0x01010101;
 }
 
-    /*
-     * Note: To make the code more readable we refer to the neighboring pixels
-     * in variables named as below:
-     *
-     *    UL U0 U1 U2 U3 U4 U5 U6 U7
-     *    L0 xx xx xx xx
-     *    L1 xx xx xx xx
-     *    L2 xx xx xx xx
-     *    L3 xx xx xx xx
-     */
+/*
+ * Note: To make the code more readable we refer to the neighboring pixels
+ * in variables named as below:
+ *
+ *    UL U0 U1 U2 U3 U4 U5 U6 U7
+ *    L0 xx xx xx xx
+ *    L1 xx xx xx xx
+ *    L2 xx xx xx xx
+ *    L3 xx xx xx xx
+ */
 #define UL edge[-1]
 #define U0 edge[0]
 #define T1 edge[1]
@@ -2482,7 +2078,7 @@ static void h264e_intra_predict_16x16_sse2(pix_t *predict,  const pix_t *left, c
     {
         __m128i dc128;
         int dc = intra_predict_dc_sse(left, top, 4);
-        dc128 = _mm_shuffle_epi32 (_mm_cvtsi32_si128(dc), 0);
+        dc128 = _mm_shuffle_epi32(_mm_cvtsi32_si128(dc), 0);
         do
         {
             _mm_store_si128((__m128i *)predict, dc128);
@@ -2955,7 +2551,7 @@ static __inline void hpel_lpf_ver_sse(const uint8_t *src, int src_stride, uint8_
 
 static void average_16x16_unalign_sse(uint8_t *dst, const uint8_t *src, int src_stride)
 {
-    __m128i * d = (__m128i *)dst;
+    __m128i *d = (__m128i *)dst;
     _mm_store_si128(d, _mm_avg_epu8(_mm_load_si128(d), _mm_loadu_si128((__m128i *)src))); src += src_stride; d++;
     _mm_store_si128(d, _mm_avg_epu8(_mm_load_si128(d), _mm_loadu_si128((__m128i *)src))); src += src_stride; d++;
     _mm_store_si128(d, _mm_avg_epu8(_mm_load_si128(d), _mm_loadu_si128((__m128i *)src))); src += src_stride; d++;
@@ -3310,7 +2906,7 @@ static void h264e_copy_8x8_sse2(pix_t *d, int d_stride, const pix_t *s)
     _mm_storel_epi64((__m128i*)(d), _mm_loadl_epi64((__m128i*)(s)));
 }
 
-static void h264e_copy_16x16_sse2(pix_t * d, int d_stride, const pix_t * s, int s_stride)
+static void h264e_copy_16x16_sse2(pix_t *d, int d_stride, const pix_t *s, int s_stride)
 {
     assert(IS_ALIGNED(d, 8));
     assert(IS_ALIGNED(s, 8));
@@ -3700,7 +3296,7 @@ static int h264e_transform_sub_quant_dequant_sse2(const pix_t *inp, const pix_t 
     return nz_block_mask;
 }
 
-static void h264e_transform_add_sse2(pix_t* out, int out_stride, const pix_t* pred, quant_t* q, int side, int32_t mask)
+static void h264e_transform_add_sse2(pix_t *out, int out_stride, const pix_t *pred, quant_t *q, int side, int32_t mask)
 {
     int crow = side;
     int ccol = crow;
@@ -3716,7 +3312,7 @@ static void h264e_transform_add_sse2(pix_t* out, int out_stride, const pix_t* pr
             if (mask >= 0)
             {
                 // copy 4x4
-                pix_t * dst = out;
+                pix_t *dst = out;
                 *(uint32_t*)dst = *(uint32_t*)(pred + 0 * 16); dst += out_stride;
                 *(uint32_t*)dst = *(uint32_t*)(pred + 1 * 16); dst += out_stride;
                 *(uint32_t*)dst = *(uint32_t*)(pred + 2 * 16); dst += out_stride;
@@ -5670,7 +5266,7 @@ static void quant_dc_neon(int16_t *qval, int16_t *deq, int16_t quant, int n, int
         deq[*scan++] = *qval++ = (v * quant + r) >> 18;
     } while (--n);
 #else
-    int r_minus =  (1<<18) - round_q18;
+    int r_minus =  (1 << 18) - round_q18;
     do
     {
         int v = *qval;
@@ -5930,7 +5526,7 @@ static int quantize_neon(quant_t *q, int mode, const uint16_t *qdat, int zmask)
 
             if (zmask & 1)
             {
-                int32_t * p = (int32_t *)q->qv;
+                int32_t *p = (int32_t *)q->qv;
                 *p++ = 0; *p++ = 0; *p++ = 0; *p++ = 0;
                 *p++ = 0; *p++ = 0; *p++ = 0; *p++ = 0;
             } else
@@ -6023,9 +5619,9 @@ static int quantize_neon(quant_t *q, int mode, const uint16_t *qdat, int zmask)
                     bm1 = vandq_u16(bm1, vceqq_s16(vcombine_s16(d6, d7), vdupq_n_s16(0)));
                     bm0 = vorrq_u16(bm0, bm1);
                     m = vorr_u16(vget_low_u16(bm0), vget_high_u16(bm0));
-                    m = vpadd_u16(m,m);
-                    m = vpadd_u16(m,m);
-                    nz_mask = vget_lane_u16( vmvn_u16(m), 0);
+                    m = vpadd_u16(m, m);
+                    m = vpadd_u16(m, m);
+                    nz_mask = vget_lane_u16(vmvn_u16(m), 0);
                 }
 
                 if (mode & 1)
@@ -6100,7 +5696,7 @@ static void h264e_transform_add_neon(pix_t *out, int out_stride, const pix_t *pr
             if (mask >= 0)
             {
                 // copy 4x4
-                pix_t * dst = out;
+                pix_t *dst = out;
                 *(uint32_t*)dst = *(uint32_t*)(pred + 0 * 16); dst += out_stride;
                 *(uint32_t*)dst = *(uint32_t*)(pred + 1 * 16); dst += out_stride;
                 *(uint32_t*)dst = *(uint32_t*)(pred + 2 * 16); dst += out_stride;
@@ -6225,8 +5821,7 @@ static void deblock_luma_v(uint8_t *pix, int stride, int alpha, int beta, const 
                 }
                 pix += stride;
             } while (--cloop);
-        }
-        else
+        } else
         {
                 pix += 4*stride;
         }
@@ -6327,7 +5922,7 @@ static void deblock_luma_v_s4(uint8_t *pix, int stride, int alpha, int beta)
     } while (--cloop);
 }
 
-static void deblock_luma_h(uint8_t *pix, int stride, int alpha, int beta, const uint8_t * pthr, const uint8_t * pstr)
+static void deblock_luma_h(uint8_t *pix, int stride, int alpha, int beta, const uint8_t *pthr, const uint8_t *pstr)
 {
     int p2, p1, p0, q0, q1, q2;
     int ap, aq, delta, i;
@@ -6968,7 +6563,6 @@ static void hpel_lpf_diag(const uint8_t *src, int src_stride, uint8_t *h264e_res
     }
 }
 
-
 static void hpel_lpf_hor(const uint8_t *src, int src_stride, uint8_t *h264e_restrict dst, int w, int h)
 {
     int x, y;
@@ -7205,7 +6799,7 @@ static int clip_byte(int x)
     return x;
 }
 
-static void hadamar4_2d(int16_t * x)
+static void hadamar4_2d(int16_t *x)
 {
     int s = 1;
     int sback = 1;
@@ -7244,10 +6838,10 @@ static void dequant_dc(quant_t *q, int16_t *qval, int dequant, int n)
     do q++->dq[0] = (int16_t)(*qval++ * (int16_t)dequant); while (--n);
 }
 
-static void quant_dc(int16_t* qval, int16_t* deq, int16_t quant, int n, int round_q18)
+static void quant_dc(int16_t *qval, int16_t *deq, int16_t quant, int n, int round_q18)
 {
 #if UNZIGSAG_IN_QUANT
-    int r_minus =  (1<<18) - round_q18;
+    int r_minus =  (1 << 18) - round_q18;
     static const uint8_t iscan16[16] = {0, 1, 5, 6, 2, 4, 7, 12, 3, 8, 11, 13, 9, 10, 14, 15};
     static const uint8_t iscan4[4] = {0, 1, 2, 3};
     const uint8_t *scan = n == 4 ? iscan4 : iscan16;
@@ -7268,7 +6862,7 @@ static void quant_dc(int16_t* qval, int16_t* deq, int16_t quant, int n, int roun
 #endif
 }
 
-static void hadamar2_2d(int16_t * x)
+static void hadamar2_2d(int16_t *x)
 {
     int a = x[0];
     int b = x[1];
@@ -7321,19 +6915,15 @@ static const uint8_t g_idx2quant[16] =
     (p)[3*s] = (int16_t)(t1 - t3*2);      \
 }
 
-static void FwdTransformResidual4x42(
-    const uint8_t*  inp,
-    const uint8_t*  pred,
-    uint32_t        inp_stride,
-    int16_t*        out
-)
+static void FwdTransformResidual4x42(const uint8_t *inp, const uint8_t *pred,
+    uint32_t inp_stride, int16_t *out)
 {
     int i;
     int16_t tmp[16];
 
 #if TRANSPOSE_BLOCK
     // Transform columns
-    for (i=0; i<4; i++, pred++, inp++)
+    for (i = 0; i < 4; i++, pred++, inp++)
     {
         int f0 = inp[0] - pred[0];
         int f1 = inp[1*inp_stride] - pred[1*16];
@@ -7342,7 +6932,7 @@ static void FwdTransformResidual4x42(
         TRANSFORM(f0, f1, f2, f3, tmp + i*4, 1);
     }
     // Transform rows
-    for (i=0; i<4; i++)
+    for (i = 0; i < 4; i++)
     {
         int d0 = tmp[i + 0];
         int d1 = tmp[i + 4];
@@ -7353,7 +6943,7 @@ static void FwdTransformResidual4x42(
 
 #else
     /* Transform rows */
-    for (i=0; i<16; i+=4)
+    for (i = 0; i < 16; i += 4)
     {
         int d0 = inp[0] - pred[0];
         int d1 = inp[1] - pred[1];
@@ -7365,7 +6955,7 @@ static void FwdTransformResidual4x42(
     }
 
     /* Transform columns */
-    for (i=0; i<4; i++)
+    for (i = 0; i < 4; i++)
     {
         int f0 = tmp[i + 0];
         int f1 = tmp[i + 4];
@@ -7476,7 +7066,7 @@ static int zero_smallq(quant_t *q, int mode, const uint16_t *qdat)
     return zmask;
 }
 
-static int quantize(quant_t * q, int mode, const uint16_t * qdat, int zmask)
+static int quantize(quant_t *q, int mode, const uint16_t *qdat, int zmask)
 {
 #if UNZIGSAG_IN_QUANT
 #if TRANSPOSE_BLOCK
@@ -7502,7 +7092,7 @@ static int quantize(quant_t * q, int mode, const uint16_t * qdat, int zmask)
 
             if (zmask & 1)
             {
-                int32_t * p = (int32_t *)q->qv;
+                int32_t *p = (int32_t *)q->qv;
                 *p++ = 0; *p++ = 0; *p++ = 0; *p++ = 0;
                 *p++ = 0; *p++ = 0; *p++ = 0; *p++ = 0;
             } else
@@ -7524,7 +7114,7 @@ static int quantize(quant_t * q, int mode, const uint16_t * qdat, int zmask)
                         nz_mask |= 1 << i;
                     q->qv[i] = (int16_t)v;
 #endif
-                    q->dq[i] = (int16_t)(v*qdat[off+1]);
+                    q->dq[i] = (int16_t)(v*qdat[off + 1]);
                 }
             }
 
@@ -7594,7 +7184,7 @@ static void h264e_transform_add(pix_t *out, int out_stride, const pix_t *pred, q
             if (mask >= 0)
             {
                 // copy 4x4
-                pix_t * dst = out;
+                pix_t *dst = out;
                 *(uint32_t*)dst = *(uint32_t*)(pred + 0 * 16); dst += out_stride;
                 *(uint32_t*)dst = *(uint32_t*)(pred + 1 * 16); dst += out_stride;
                 *(uint32_t*)dst = *(uint32_t*)(pred + 2 * 16); dst += out_stride;
@@ -7663,7 +7253,7 @@ static unsigned h264e_bs_get_pos_bits(const bs_t *bs)
     return pos_bits;
 }
 
-static unsigned h264e_bs_byte_align(bs_t * bs)
+static unsigned h264e_bs_byte_align(bs_t *bs)
 {
     int pos = h264e_bs_get_pos_bits(bs);
     h264e_bs_put_bits(bs, -pos & 7, 0);
@@ -7725,7 +7315,7 @@ static void h264e_bs_init_bits(bs_t *bs, void *data)
     bs->cache = 0;
 }
 
-#define BS_OPEN(bs) uint32_t cache = bs->cache; int shift = bs->shift; uint32_t * buf = bs->buf;
+#define BS_OPEN(bs) uint32_t cache = bs->cache; int shift = bs->shift; uint32_t *buf = bs->buf;
 #define BS_CLOSE(bs) bs->cache = cache; bs->shift = shift; bs->buf = buf;
 #define BS_PUT(n, val)      \
 if ((shift -= n) < 0)       \
@@ -8113,8 +7703,8 @@ static void h264e_intra_upsampling(int srcw, int srch, int dstw, int dsth, int i
                 int ypos = start_y - (4 << 12);
                 for (j = 0; j < dsth; j++)
                 {
-                    int yfrac      = (ypos >> 12) & 15;
-                    int yint     = (ypos >> 16);
+                    int yfrac = (ypos >> 12) & 15;
+                    int yint  = (ypos >> 16);
                     int acc = yfrac*src16[yint + 1] + (16 - yfrac)*src16[yint + 0];
                     acc = (acc + 128) >> 8;
                     *dst = (int8_t)acc;
@@ -8592,7 +8182,6 @@ static uint32_t mul32x32shr16(uint32_t x, uint32_t y)
 */
 static uint32_t div_q16(uint32_t numer, uint32_t denum)
 {
-    //printf("div_q16(%d, %d)\n", numer, denum);
     unsigned f = 1 << __clz(denum);
     do
     {
@@ -8770,7 +8359,6 @@ static void pix_copy_recon_pic_to_ref(h264e_enc_t *enc)
         if (!c) guard >>= 1, w >>= 1, h >>= 1;
     }
 }
-
 
 /************************************************************************/
 /*      Median MV predictor                                             */
@@ -9222,7 +8810,7 @@ static void nal_end(h264e_enc_t *enc)
 #define default_base_mode_flag 0
 #define log2_max_frame_num_minus4 1
 
-static void encode_sps(h264e_enc_t * enc,int profile_idc)
+static void encode_sps(h264e_enc_t *enc, int profile_idc)
 {
     struct limit_t
     {
@@ -9608,7 +9196,7 @@ l_skip:
         if (enc->mb.type != 5)
         {
             unsigned nz_mask;
-            nz_mask = h264e_transform_sub_quant_dequant(qv->mb_pix_inp, enc->pbest, 16, intra16x16_flag?QDQ_MODE_INTRA_16:QDQ_MODE_INTER, qv->qy, enc->rc.qdat[0]);
+            nz_mask = h264e_transform_sub_quant_dequant(qv->mb_pix_inp, enc->pbest, 16, intra16x16_flag ? QDQ_MODE_INTRA_16 : QDQ_MODE_INTER, qv->qy, enc->rc.qdat[0]);
             enc->scratch->nz_mask = (uint16_t)nz_mask;
             if (intra16x16_flag)
             {
@@ -9652,7 +9240,7 @@ l_skip:
                 cbpc = 2;
             }
 
-            cbpc |= dc_flag = h264e_quant_chroma_dc(pquv, uv==1?qv->quant_dc_u:qv->quant_dc_v, enc->rc.qdat[1]);
+            cbpc |= dc_flag = h264e_quant_chroma_dc(pquv, uv == 1 ? qv->quant_dc_u : qv->quant_dc_v, enc->rc.qdat[1]);
 
             if (!(dc_flag | nz_mask))
             {
@@ -10226,7 +9814,7 @@ restart:
                 sad.cache[dir^1] = (uint16_t)min_sad;   // previous center become a neighbor's
                 dir_prev = dir;                         // save this direction
                 dir--;                                  // start next iteration with the same direction
-                cloop = 4+1;                            // and try 4 directions (+1 for do-while loop)
+                cloop = 4 + 1;                          // and try 4 directions (+1 for do-while loop)
                 *mv = v;                                // Save best point found
                 min_sad = cost;                         // and it's SAD
             }
@@ -10552,7 +10140,7 @@ static void inter_choose_mode(h264e_enc_t *enc)
     }
 
     mv_cand[ncand++] = mv_pred_16x16;
-    ncand += me_mv_medianpredictor_get_cand(enc, mv_cand+ncand);
+    ncand += me_mv_medianpredictor_get_cand(enc, mv_cand + ncand);
 
     if (enc->mb.x <= 0)
     {
@@ -10585,7 +10173,7 @@ static void inter_choose_mode(h264e_enc_t *enc)
                 mb_inter_partition(sad4, prefered_modes);
             }
 
-            if (sad +mv_cand_cost < sad_best+mv_cand_cost_best)
+            if (sad + mv_cand_cost < sad_best + mv_cand_cost_best)
             //if (sad < sad_best)
             {
                 mv_cand_cost_best = mv_cand_cost;
@@ -10775,7 +10363,7 @@ static void df_strength(deblock_filter_t *df, int mb_type, int mbx, uint8_t *str
                 do
                 {
                     int v = 0;
-                    if (flag & 3<<4)
+                    if (flag & 3 << 4)
                     {
                         v = 2;
                     } else if (mv_differs3(mv[4], mv[5]))
@@ -11064,7 +10652,7 @@ static void rc_set_qp(h264e_enc_t *enc, int qp)
             // quantizer deadzone for I
             *qdat++ = g_deadzonei[qp];
 
-            *qdat++ = g_thr_inter[qp] - 0x7fff;
+            *qdat++ = g_thr_inter[qp]  - 0x7fff;
             *qdat++ = g_thr_inter2[qp] - 0x7fff;
 
             qdat[0] = qdat[2] = rc_rnd2thr(g_thr_inter[qp] - 0x7fff, qdat0[0]);
@@ -11741,7 +11329,7 @@ static int H264E_encode_one(H264E_persist_t *enc, const H264E_run_param_t *opt,
             for (i = 0; i < enc->param.max_threads; i++)
             {
                 memcpy(enc->out + enc->out_pos, enc_thr[i].out, enc_thr[i].out_pos);
-                enc->out_pos +=  enc_thr[i].out_pos;
+                enc->out_pos += enc_thr[i].out_pos;
             }
             enc->frame.nmby = nmby;
             for (i = 0; i < 3; i++)
@@ -11771,11 +11359,6 @@ static int H264E_encode_one(H264E_persist_t *enc, const H264E_run_param_t *opt,
         enc->short_term_used = 1;
     }
 
-//     if (enc->mb.skip_run)
-//     {
-//         UE(enc->mb.skip_run);
-//     }
-//  nal_end(enc);
     rc_frame_end(enc, long_term_idx_use == -1, enc->mb.skip_run == enc->frame.nmb, is_refers_to_long_term);
 
     if (long_term_idx_use > 0)
@@ -11804,8 +11387,6 @@ static int H264E_encode_one(H264E_persist_t *enc, const H264E_run_param_t *opt,
             }
         }
     }
-
-    enc->dbg.frm_cnt++;
 
     return H264E_STATUS_SUCCESS;
 }

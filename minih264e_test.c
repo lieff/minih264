@@ -462,14 +462,12 @@ int main(int argc, char *argv[])
     create_param.max_long_term_reference_frames = MAX_LONG_TERM_FRAMES;
 #endif
     create_param.fine_rate_control_flag = 0;
-    create_param.const_input_flag = 1;
+    create_param.const_input_flag = cmdline->psnr ? 0 : 1;
     //create_param.vbv_overflow_empty_frame_flag = 1;
     //create_param.vbv_underflow_stuffing_flag = 1;
     create_param.vbv_size_bytes = 100000/8;
     create_param.temporal_denoise_flag = cmdline->denoise;
     //create_param.vbv_size_bytes = 1500000/8;
-
-    create_param.const_input_flag = cmdline->psnr ? 0 : 1;
 
 #if H264E_MAX_THREADS
     void *thread_pool = NULL;
