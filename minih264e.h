@@ -3170,7 +3170,6 @@ static int h264e_transform_sub_quant_dequant_sse2(const pix_t *inp, const pix_t 
             d2 = _mm_unpacklo_epi64(q1, q3);    // a2, b2,
             d3 = _mm_unpackhi_epi64(q1, q3);    // a3, b3,
 
-
             t0 = _mm_add_epi16(d0, d3);
             t1 = _mm_sub_epi16(d0, d3);
             t2 = _mm_add_epi16(d1, d2);
@@ -3240,9 +3239,9 @@ static int h264e_transform_sub_quant_dequant_sse2(const pix_t *inp, const pix_t 
                 _mm_store_si128((__m128i*)(q->qv) + 1, _mm_setzero_si128());
             } else
             {
-                int16_t *qv_tmp  = q->qv;//[16];
+                int16_t *qv_tmp = q->qv;//[16];
                 __m128i t;
-                const __m128i const_q = _mm_loadu_si128((__m128i*)(qdat + OFFS_QUANT_VECT));
+                const __m128i const_q  = _mm_loadu_si128((__m128i*)(qdat + OFFS_QUANT_VECT));
                 const __m128i const_dq = _mm_loadu_si128((__m128i*)(qdat + OFFS_DEQUANT_VECT));
 
                 __m128i src = _mm_load_si128((__m128i*)(q[0].dq));
@@ -4528,7 +4527,7 @@ static int h264e_intra_choose_4x4_neon(const pix_t *blockin, pix_t *blockpred, i
 
     vt = vld1q_u8(&L3);
     vt = vreinterpretq_u8_u32(vsetq_lane_u32(U7*0x01010101, vreinterpretq_u32_u8(vt), 3));
-    if (avail&AVAIL_T)
+    if (avail & AVAIL_T)
     {
         uint32x2_t t2;
         if (!(avail & AVAIL_TR))
@@ -4559,7 +4558,7 @@ static int h264e_intra_choose_4x4_neon(const pix_t *blockin, pix_t *blockpred, i
         VTEST(7);
     }
 
-    if (avail&AVAIL_L)
+    if (avail & AVAIL_L)
     {
         vx = vrev32q_u8(vt);
         vx = vzipq_u8(vx, vx).val[0];
@@ -5433,8 +5432,8 @@ static void TransformResidual4x4_neon(int16_t *pDst, const int16_t *pSrc, const 
     h3 = vsub_s16(g0, g3);
 
     {
-        uint8x8_t inp0  = vreinterpret_u8_s32(vtrn_s32(vreinterpret_s32_u8(vld1_u8(pred)),  vreinterpret_s32_u8(vld1_u8(pred + 16))).val[0]);
-        uint8x8_t inp1  = vreinterpret_u8_s32(vtrn_s32(vreinterpret_s32_u8(vld1_u8(pred + 2*16)), vreinterpret_s32_u8(vld1_u8(pred + 3*16))).val[0]);
+        uint8x8_t inp0 = vreinterpret_u8_s32(vtrn_s32(vreinterpret_s32_u8(vld1_u8(pred)),  vreinterpret_s32_u8(vld1_u8(pred + 16))).val[0]);
+        uint8x8_t inp1 = vreinterpret_u8_s32(vtrn_s32(vreinterpret_s32_u8(vld1_u8(pred + 2*16)), vreinterpret_s32_u8(vld1_u8(pred + 3*16))).val[0]);
         int16x8_t a0 = vaddq_s16(vcombine_s16(h0, h1), vreinterpretq_s16_u16(vshll_n_u8(inp0, 6)));
         int16x8_t a1 = vaddq_s16(vcombine_s16(h2, h3), vreinterpretq_s16_u16(vshll_n_u8(inp1, 6)));
         uint8x8_t r0 = vqrshrun_n_s16(a0, 6);
@@ -5448,22 +5447,17 @@ static void TransformResidual4x4_neon(int16_t *pDst, const int16_t *pSrc, const 
 
 static int is_zero_neon(const int16_t *dat, int i0, const uint16_t *thr)
 {
-    int i;
-    for (i = i0; i < 16; i++)
-    {
-#if 1
-        if ((unsigned)(dat[i] + thr[i & 7]) > (unsigned)2*thr[i & 7])
-        {
-            return 0;
-        }
-#else
-        if (ABS(dat[i]) > thr[i & 7])
-        {
-            return 0;
-        }
-#endif
-    }
-    return 1;
+    static const uint16x8_t g_ign_first = { 0, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff };
+    int16x8_t v0 = vabsq_s16(*(int16x8_t *)dat);
+    int16x8_t v1 = vabsq_s16(*(int16x8_t *)(dat + 8));
+    int16x8_t t = *(int16x8_t *)thr;
+    uint16x8_t m0 = vcgtq_s16(v0, t);
+    uint16x8_t m1 = vcgtq_s16(v1, t);
+    if (i0)
+        m0 = vandq_u16(m0, g_ign_first);
+    m0 = vorrq_u16(m0, m1);
+    uint16x4_t m4 = vorr_u16(vget_low_u16(m0), vget_high_u16(m0));
+    return !(vget_lane_u32(vreinterpret_u32_u16(m4), 0) | vget_lane_u32(vreinterpret_u32_u16(m4), 1));
 }
 
 static int is_zero4_neon(const quant_t *q, int i0, const uint16_t *thr)
@@ -7034,9 +7028,9 @@ static int is_zero(const int16_t *dat, int i0, const uint16_t *thr)
 static int is_zero4(const quant_t *q, int i0, const uint16_t *thr)
 {
     return is_zero(q[0].dq, i0, thr) &&
-        is_zero(q[1].dq, i0, thr) &&
-        is_zero(q[4].dq, i0, thr) &&
-        is_zero(q[5].dq, i0, thr);
+           is_zero(q[1].dq, i0, thr) &&
+           is_zero(q[4].dq, i0, thr) &&
+           is_zero(q[5].dq, i0, thr);
 }
 
 static int zero_smallq(quant_t *q, int mode, const uint16_t *qdat)
@@ -11639,7 +11633,6 @@ int H264E_encode(H264E_persist_t *enc, H264E_scratch_t *scratch, const H264E_run
     *coded_data = enc->out;
     return H264E_STATUS_SUCCESS;
 }
-
 
 /**
 *   Return persistent and scratch memory requirements
