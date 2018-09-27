@@ -344,7 +344,7 @@ void H264E_set_vbv_state(
 
 #if (defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64))) || ((defined(__i386__) || defined(__x86_64__)) && defined(__SSE2__))
 #define H264E_ENABLE_SSE2 1
-#if defined (_MSC_VER)
+#if defined(_MSC_VER)
 #include <intrin.h>
 #else
 #include <emmintrin.h>
@@ -381,10 +381,12 @@ void H264E_set_vbv_state(
 #error platform not supported
 #endif
 
-#if defined (__arm) && defined (__ARMCC_VERSION)
+#if defined(__arm__) && defined(__ARMCC_VERSION)
 #include <armdsp.h>
 #endif
-#if defined (__arm) && defined (__GNUC__) && !defined (__ARMCC_VERSION)
+#if defined(__arm__) && defined(__clang__)
+#include <arm_acle.h>
+#elif defined(__arm__) && defined(__GNUC__) && !defined(__ARMCC_VERSION)
 static inline unsigned int __usad8(unsigned int val1, unsigned int val2)
 {
     unsigned int result;
@@ -434,14 +436,14 @@ static inline unsigned int __clz(unsigned int val1)
 extern "C" {
 #endif  //__cplusplus
 
-#if defined (_MSC_VER) && _MSC_VER >= 1400
+#if defined(_MSC_VER) && _MSC_VER >= 1400
 #   define h264e_restrict __restrict
-#elif defined __arm
+#elif defined(__arm__)
 #   define h264e_restrict __restrict
 #else
 #   define h264e_restrict
 #endif
-#if defined (_MSC_VER) && _MSC_VER >= 1400
+#if defined(_MSC_VER) && _MSC_VER >= 1400
 #   define ALIGN(n) __declspec(align(n))
 #else
 #   define ALIGN(n)
@@ -6302,7 +6304,7 @@ static void h264e_intra_predict_chroma(pix_t *predict, const pix_t *left, const 
 static int pix_sad_4(uint32_t r0, uint32_t r1, uint32_t r2, uint32_t r3,
                      uint32_t x0, uint32_t x1, uint32_t x2, uint32_t x3)
 {
-#if defined __arm
+#if defined(__arm__)
     int sad = __usad8(r0, x0);
     sad = __usada8(r1, x1, sad);
     sad = __usada8(r2, x2, sad);
@@ -7266,7 +7268,7 @@ static unsigned h264e_bs_byte_align(bs_t *bs)
 */
 static void h264e_bs_put_golomb(bs_t *bs, unsigned val)
 {
-#ifdef __arm
+#ifdef __arm__
     int size = 32 - __clz(val + 1);
 #else
     int size = 0;
@@ -8141,7 +8143,7 @@ static void init_vft(int enableNEON)
 /*      Arithmetics                                                     */
 /************************************************************************/
 
-#ifndef __arm
+#ifndef __arm__
 /**
 *   Count of leading zeroes
 */
@@ -8151,7 +8153,7 @@ static unsigned __clz(unsigned v)
     unsigned long nbit;
     _BitScanReverse(&nbit, v);
     return 31 - nbit;
-#elif defined(__GNUC__) || defined(__clang__) || defined(__arm) || defined(__arm__) || defined(__aarch64__)
+#elif defined(__GNUC__) || defined(__clang__) || defined(__aarch64__)
     return __builtin_clz(v);
 #else
     unsigned clz = 32;
@@ -8239,7 +8241,7 @@ static int mv_differs3(point_t p0, point_t p1)
 
 static point_t mv_add(point_t a, point_t b)
 {
-#if defined __arm
+#if defined(__arm__)
     a.u32 = __sadd16(a.u32, b.u32);
 #elif H264E_ENABLE_SSE2 && (H264E_CONFIGS_COUNT == 1)
     a.u32 = _mm_cvtsi128_si32(_mm_add_epi16(_mm_cvtsi32_si128(a.u32), _mm_cvtsi32_si128(b.u32)));
@@ -8252,7 +8254,7 @@ static point_t mv_add(point_t a, point_t b)
 
 static point_t mv_sub(point_t a, point_t b)
 {
-#if defined __arm
+#if defined(__arm__)
     a.u32 = __ssub16(a.u32, b.u32);
 #elif H264E_ENABLE_SSE2 && (H264E_CONFIGS_COUNT == 1)
     a.u32 = _mm_cvtsi128_si32(_mm_sub_epi16(_mm_cvtsi32_si128(a.u32), _mm_cvtsi32_si128(b.u32)));
