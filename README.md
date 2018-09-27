@@ -10,7 +10,7 @@ Disclaimer: code highly experimental.
 
 ## Comparison with [x264](https://www.videolan.org/developers/x264.html)
 
-Rough comparision with x264 on an i7-6700K:
+Rough comparison with x264 on an i7-6700K:
 
 `x264 -I 30 --profile baseline --preset veryfast --tune zerolatency -b 0 -r 1 --qp 33 --ipratio 1.0 --qcomp 1.0 -o x264.264 --fps 30 vectors/foreman.cif --input-res 352x288 --slices 1 --threads 1`
 
