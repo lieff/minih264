@@ -384,6 +384,10 @@ void H264E_set_vbv_state(
 #if defined(__arm__) && defined(__ARMCC_VERSION)
 #include <armdsp.h>
 #endif
+#if defined(__aarch64__) && defined(__clang__)
+// uintptr_t broken with aarch64 clang on ubuntu 18
+#define uintptr_t unsigned long
+#endif
 #if defined(__arm__) && defined(__clang__)
 #include <arm_acle.h>
 #elif defined(__arm__) && defined(__GNUC__) && !defined(__ARMCC_VERSION)
