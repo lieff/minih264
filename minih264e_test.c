@@ -414,7 +414,7 @@ static void gen_chessboard_rot(unsigned char *p, int w, int h, int frm)
 
 int main(int argc, char *argv[])
 {
-    int i, frames;
+    int i, frames = 0;
     const char *fnin, *fnout;
 
     if (!read_cmdline_options(argc, argv))
