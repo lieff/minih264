@@ -5216,7 +5216,7 @@ static void h264e_copy_16x16_neon(pix_t *d, int d_stride, const pix_t *s, int s_
 // Keep intermediate data in transposed format.
 // Save transpose for vectorized implementation
 // TODO: TRANSPOSE_BLOCK==0 broken
-#define TRANSPOSE_BLOCK     0//H264E_ENABLE_SSE2
+#define TRANSPOSE_BLOCK     0
 #define UNZIGSAG_IN_QUANT   0
 
 #define SUM_DIF(a, b) { int t = a + b; b = a - b; a = t; }
@@ -6385,33 +6385,33 @@ static int h264e_intra_choose_4x4(const pix_t *blockin, pix_t *blockpred, int av
         uint32_t save = *(uint32_t*)&U4;
         if (!(avail & AVAIL_TR))
         {
-            *(uint32_t*)&U4 = U3*0x01010101;
+            *(uint32_t*)&U4 = U3*0x01010101u;
         }
 
         x0 = x1 = x2 = x3 = *(uint32_t*)&U0;
         TEST(0)
 
-        x  = ((U6 + 3*U7      + 2) >> 2) << 24;
-        x |= ((U5 + 2*U6 + U7 + 2) >> 2) << 16;
-        x |= ((U4 + 2*U5 + U6 + 2) >> 2) << 8;
-        x |= ((U3 + 2*U4 + U5 + 2) >> 2);
+        x  = ((U6 + 3u*U7      + 2u) >> 2) << 24;
+        x |= ((U5 + 2u*U6 + U7 + 2u) >> 2) << 16;
+        x |= ((U4 + 2u*U5 + U6 + 2u) >> 2) << 8;
+        x |= ((U3 + 2u*U4 + U5 + 2u) >> 2);
 
         x3 = x;
-        x = (x << 8) | ((U2 + 2*U3 + U4 + 2) >> 2);
+        x = (x << 8) | ((U2 + 2u*U3 + U4 + 2u) >> 2);
         x2 = x;
-        x = (x << 8) | ((T1 + 2*U2 + U3 + 2) >> 2);
+        x = (x << 8) | ((T1 + 2u*U2 + U3 + 2u) >> 2);
         x1 = x;
-        x = (x << 8) | ((U0 + 2*T1 + U2 + 2) >> 2);
+        x = (x << 8) | ((U0 + 2u*T1 + U2 + 2u) >> 2);
         x0 = x;
         TEST(3)
 
         x3 = x1;
         x1 = x0;
 
-        x  = ((U4 + U5 + 1) >> 1) << 24;
-        x |= ((U3 + U4 + 1) >> 1) << 16;
-        x |= ((U2 + U3 + 1) >> 1) << 8;
-        x |= ((T1 + U2 + 1) >> 1);
+        x  = ((U4 + U5 + 1u) >> 1) << 24;
+        x |= ((U3 + U4 + 1u) >> 1) << 16;
+        x |= ((U2 + U3 + 1u) >> 1) << 8;
+        x |= ((T1 + U2 + 1u) >> 1);
         x2 = x;
         x = (x << 8) | ((U0 + T1 + 1) >> 1);
         x0 = x;
@@ -6422,24 +6422,24 @@ static int h264e_intra_choose_4x4(const pix_t *blockin, pix_t *blockpred, int av
 
     if (avail & AVAIL_L)
     {
-        x0 = 0x01010101 * L0;
-        x1 = 0x01010101 * L1;
-        x2 = 0x01010101 * L2;
-        x3 = 0x01010101 * L3;
+        x0 = 0x01010101u * L0;
+        x1 = 0x01010101u * L1;
+        x2 = 0x01010101u * L2;
+        x3 = 0x01010101u * L3;
         TEST(1)
 
         x = x3;
         x <<= 16;
-        x |= ((L2 + 3*L3 + 2) >> 2) << 8;
-        x |= ((L2 + L3 + 1) >> 1);
+        x |= ((L2 + 3u*L3 + 2u) >> 2) << 8;
+        x |= ((L2 + L3 + 1u) >> 1);
         x2 = x;
         x <<= 16;
-        x |= ((L1 + 2*L2 + L3 + 2) >> 2) << 8;
-        x |= ((L1 + L2 + 1) >> 1);
+        x |= ((L1 + 2u*L2 + L3 + 2u) >> 2) << 8;
+        x |= ((L1 + L2 + 1u) >> 1);
         x1 = x;
         x <<= 16;
-        x |= ((L0 + 2*L1 + L2 + 2) >> 2) << 8;
-        x |= ((L0 + L1 + 1) >> 1);
+        x |= ((L0 + 2u*L1 + L2 + 2u) >> 2) << 8;
+        x |= ((L0 + L1 + 1u) >> 1);
         x0 = x;
         TEST(8)
     }
@@ -6447,48 +6447,48 @@ static int h264e_intra_choose_4x4(const pix_t *blockin, pix_t *blockpred, int av
     if ((avail & (AVAIL_T | AVAIL_L | AVAIL_TL)) == (AVAIL_T | AVAIL_L | AVAIL_TL))
     {
         uint32_t line0, line3;
-        x  = ((U3 + 2*U2 + T1 + 2) >> 2) << 24;
-        x |= ((U2 + 2*T1 + U0 + 2) >> 2) << 16;
-        x |= ((T1 + 2*U0 + UL + 2) >> 2) << 8;
-        x |= ((U0 + 2*UL + L0 + 2) >> 2);
+        x  = ((U3 + 2u*U2 + T1 + 2u) >> 2) << 24;
+        x |= ((U2 + 2u*T1 + U0 + 2u) >> 2) << 16;
+        x |= ((T1 + 2u*U0 + UL + 2u) >> 2) << 8;
+        x |= ((U0 + 2u*UL + L0 + 2u) >> 2);
         line0 = x;
         x0 = x;
-        x = (x << 8) | ((UL + 2*L0 + L1 + 2) >> 2);
+        x = (x << 8) | ((UL + 2u*L0 + L1 + 2u) >> 2);
         x1 = x;
-        x = (x << 8) | ((L0 + 2*L1 + L2 + 2) >> 2);
+        x = (x << 8) | ((L0 + 2u*L1 + L2 + 2u) >> 2);
         x2 = x;
-        x = (x << 8) | ((L1 + 2*L2 + L3 + 2) >> 2);
+        x = (x << 8) | ((L1 + 2u*L2 + L3 + 2u) >> 2);
         x3 = x;
         line3 = x;
         TEST(4)
 
         x = x0 << 8;
-        x |= ((UL + L0 + 1) >> 1);
+        x |= ((UL + L0 + 1u) >> 1);
         x0 = x;
         x <<= 8;
         x |= (line3 >> 16) & 0xff;
         x <<= 8;
-        x |= ((L0 + L1 + 1) >> 1);
+        x |= ((L0 + L1 + 1u) >> 1);
         x1 = x;
         x <<= 8;
         x |= (line3 >> 8) & 0xff;
         x <<= 8;
-        x |= ((L1 + L2 + 1) >> 1);
+        x |= ((L1 + L2 + 1u) >> 1);
         x2 = x;
         x <<= 8;
         x |= line3 & 0xff;
         x <<= 8;
-        x |= ((L2 + L3 + 1) >> 1);
+        x |= ((L2 + L3 + 1u) >> 1);
         x3 = x;
         TEST(6)
 
         x1 = line0;
         x3 = (x1 << 8) | ((line3 >> 8) & 0xFF);
 
-        x  = ((U2 + U3 + 1) >> 1) << 24;
-        x |= ((T1 + U2 + 1) >> 1) << 16;
-        x |= ((U0 + T1 + 1) >> 1) << 8;
-        x |= ((UL + U0 + 1) >> 1);
+        x  = ((U2 + U3 + 1u) >> 1) << 24;
+        x |= ((T1 + U2 + 1u) >> 1) << 16;
+        x |= ((U0 + T1 + 1u) >> 1) << 8;
+        x |= ((UL + U0 + 1u) >> 1);
         x0 = x;
         x = (x << 8) | ((line3 >> 16) & 0xFF);
         x2 = x;
@@ -7342,7 +7342,7 @@ static void h264e_vlc_encode(bs_t *bs, int16_t *quant, int maxNumCoeff, uint8_t 
     int cloop = maxNumCoeff;
     BS_OPEN(bs)
 
-#if H264E_ENABLE_SSE2
+#if H264E_ENABLE_SSE2 || (H264E_ENABLE_PLAIN_C && !H264E_ENABLE_NEON)
     // this branch used with SSE + C configuration
     int16_t zzquant[16];
     levels = zzquant + ((maxNumCoeff == 4) ? 4 : 16);
@@ -7351,47 +7351,47 @@ static void h264e_vlc_encode(bs_t *bs, int16_t *quant, int maxNumCoeff, uint8_t 
         int v;
         if (maxNumCoeff == 16)
         {
-            v = quant[15] << 1; if (v) *--levels = (int16_t)v, *prun++ = 16;
-            v = quant[11] << 1; if (v) *--levels = (int16_t)v, *prun++ = 15;
-            v = quant[14] << 1; if (v) *--levels = (int16_t)v, *prun++ = 14;
-            v = quant[13] << 1; if (v) *--levels = (int16_t)v, *prun++ = 13;
-            v = quant[10] << 1; if (v) *--levels = (int16_t)v, *prun++ = 12;
-            v = quant[ 7] << 1; if (v) *--levels = (int16_t)v, *prun++ = 11;
-            v = quant[ 3] << 1; if (v) *--levels = (int16_t)v, *prun++ = 10;
-            v = quant[ 6] << 1; if (v) *--levels = (int16_t)v, *prun++ =  9;
-            v = quant[ 9] << 1; if (v) *--levels = (int16_t)v, *prun++ =  8;
-            v = quant[12] << 1; if (v) *--levels = (int16_t)v, *prun++ =  7;
-            v = quant[ 8] << 1; if (v) *--levels = (int16_t)v, *prun++ =  6;
-            v = quant[ 5] << 1; if (v) *--levels = (int16_t)v, *prun++ =  5;
-            v = quant[ 2] << 1; if (v) *--levels = (int16_t)v, *prun++ =  4;
-            v = quant[ 1] << 1; if (v) *--levels = (int16_t)v, *prun++ =  3;
-            v = quant[ 4] << 1; if (v) *--levels = (int16_t)v, *prun++ =  2;
-            v = quant[ 0] << 1; if (v) *--levels = (int16_t)v, *prun++ =  1;
+            v = quant[15]*2; if (v) *--levels = (int16_t)v, *prun++ = 16;
+            v = quant[11]*2; if (v) *--levels = (int16_t)v, *prun++ = 15;
+            v = quant[14]*2; if (v) *--levels = (int16_t)v, *prun++ = 14;
+            v = quant[13]*2; if (v) *--levels = (int16_t)v, *prun++ = 13;
+            v = quant[10]*2; if (v) *--levels = (int16_t)v, *prun++ = 12;
+            v = quant[ 7]*2; if (v) *--levels = (int16_t)v, *prun++ = 11;
+            v = quant[ 3]*2; if (v) *--levels = (int16_t)v, *prun++ = 10;
+            v = quant[ 6]*2; if (v) *--levels = (int16_t)v, *prun++ =  9;
+            v = quant[ 9]*2; if (v) *--levels = (int16_t)v, *prun++ =  8;
+            v = quant[12]*2; if (v) *--levels = (int16_t)v, *prun++ =  7;
+            v = quant[ 8]*2; if (v) *--levels = (int16_t)v, *prun++ =  6;
+            v = quant[ 5]*2; if (v) *--levels = (int16_t)v, *prun++ =  5;
+            v = quant[ 2]*2; if (v) *--levels = (int16_t)v, *prun++ =  4;
+            v = quant[ 1]*2; if (v) *--levels = (int16_t)v, *prun++ =  3;
+            v = quant[ 4]*2; if (v) *--levels = (int16_t)v, *prun++ =  2;
+            v = quant[ 0]*2; if (v) *--levels = (int16_t)v, *prun++ =  1;
         } else
         {
-            v = quant[15] << 1; if (v) *--levels = (int16_t)v, *prun++ = 15;
-            v = quant[11] << 1; if (v) *--levels = (int16_t)v, *prun++ = 14;
-            v = quant[14] << 1; if (v) *--levels = (int16_t)v, *prun++ = 13;
-            v = quant[13] << 1; if (v) *--levels = (int16_t)v, *prun++ = 12;
-            v = quant[10] << 1; if (v) *--levels = (int16_t)v, *prun++ = 11;
-            v = quant[ 7] << 1; if (v) *--levels = (int16_t)v, *prun++ = 10;
-            v = quant[ 3] << 1; if (v) *--levels = (int16_t)v, *prun++ =  9;
-            v = quant[ 6] << 1; if (v) *--levels = (int16_t)v, *prun++ =  8;
-            v = quant[ 9] << 1; if (v) *--levels = (int16_t)v, *prun++ =  7;
-            v = quant[12] << 1; if (v) *--levels = (int16_t)v, *prun++ =  6;
-            v = quant[ 8] << 1; if (v) *--levels = (int16_t)v, *prun++ =  5;
-            v = quant[ 5] << 1; if (v) *--levels = (int16_t)v, *prun++ =  4;
-            v = quant[ 2] << 1; if (v) *--levels = (int16_t)v, *prun++ =  3;
-            v = quant[ 1] << 1; if (v) *--levels = (int16_t)v, *prun++ =  2;
-            v = quant[ 4] << 1; if (v) *--levels = (int16_t)v, *prun++ =  1;
+            v = quant[15]*2; if (v) *--levels = (int16_t)v, *prun++ = 15;
+            v = quant[11]*2; if (v) *--levels = (int16_t)v, *prun++ = 14;
+            v = quant[14]*2; if (v) *--levels = (int16_t)v, *prun++ = 13;
+            v = quant[13]*2; if (v) *--levels = (int16_t)v, *prun++ = 12;
+            v = quant[10]*2; if (v) *--levels = (int16_t)v, *prun++ = 11;
+            v = quant[ 7]*2; if (v) *--levels = (int16_t)v, *prun++ = 10;
+            v = quant[ 3]*2; if (v) *--levels = (int16_t)v, *prun++ =  9;
+            v = quant[ 6]*2; if (v) *--levels = (int16_t)v, *prun++ =  8;
+            v = quant[ 9]*2; if (v) *--levels = (int16_t)v, *prun++ =  7;
+            v = quant[12]*2; if (v) *--levels = (int16_t)v, *prun++ =  6;
+            v = quant[ 8]*2; if (v) *--levels = (int16_t)v, *prun++ =  5;
+            v = quant[ 5]*2; if (v) *--levels = (int16_t)v, *prun++ =  4;
+            v = quant[ 2]*2; if (v) *--levels = (int16_t)v, *prun++ =  3;
+            v = quant[ 1]*2; if (v) *--levels = (int16_t)v, *prun++ =  2;
+            v = quant[ 4]*2; if (v) *--levels = (int16_t)v, *prun++ =  1;
         }
     } else
     {
         int v;
-        v = quant[ 3] << 1; if (v) *--levels = (int16_t)v, *prun++ = 4;
-        v = quant[ 2] << 1; if (v) *--levels = (int16_t)v, *prun++ = 3;
-        v = quant[ 1] << 1; if (v) *--levels = (int16_t)v, *prun++ = 2;
-        v = quant[ 0] << 1; if (v) *--levels = (int16_t)v, *prun++ = 1;
+        v = quant[ 3]*2; if (v) *--levels = (int16_t)v, *prun++ = 4;
+        v = quant[ 2]*2; if (v) *--levels = (int16_t)v, *prun++ = 3;
+        v = quant[ 1]*2; if (v) *--levels = (int16_t)v, *prun++ = 2;
+        v = quant[ 0]*2; if (v) *--levels = (int16_t)v, *prun++ = 1;
     }
     quant = zzquant + ((maxNumCoeff == 4) ? 4 : 16);
     nnz = (int)(quant - levels);
@@ -7401,9 +7401,9 @@ static void h264e_vlc_encode(bs_t *bs, int16_t *quant, int maxNumCoeff, uint8_t 
     do
     {
         int v = *--quant;
-        if (v <<= 1)
+        if (v)
         {
-            *--levels = v;
+            *--levels = v*2;
             *prun++ = cloop;
         }
     } while (--cloop);

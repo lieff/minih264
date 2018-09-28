@@ -4,6 +4,22 @@ CUR_DIR=$(cd $(dirname ${CUR_DIR}); pwd)/$(basename ${CUR_DIR})/
 
 pushd $CUR_DIR/..
 
+./h264enc_x86 vectors/foreman.cif
+if ! cmp ./out.264 vectors/out_ref.264 >/dev/null 2>&1
+then
+    echo test failed
+    exit 1
+fi
+rm out.264
+
+./h264enc_x86_sse2 vectors/foreman.cif
+if ! cmp ./out.264 vectors/out_ref.264 >/dev/null 2>&1
+then
+    echo test failed
+    exit 1
+fi
+rm out.264
+
 ./h264enc_x64 vectors/foreman.cif
 if ! cmp ./out.264 vectors/out_ref.264 >/dev/null 2>&1
 then
