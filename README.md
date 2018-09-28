@@ -53,7 +53,7 @@ Note that decoder must have both base layer I frame _and_ full resolution SVC I 
 
 ## Limitations
 
-The following major features are not supported compared to x264:
+The following major features are not supported compared to x264 (baseline):
 
  * Trellis quantization.
  * Select prediction mode using Sum of Absolute Transform Differences (SATD).
