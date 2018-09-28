@@ -474,6 +474,19 @@ typedef int int_u;
 
 #define IS_ALIGNED(p, n) (!((uintptr_t)(p) & (uintptr_t)((n) - 1)))
 
+// bit-stream
+#define BS_OPEN(bs) uint32_t cache = bs->cache; int shift = bs->shift; uint32_t *buf = bs->buf;
+#define BS_CLOSE(bs) bs->cache = cache; bs->shift = shift; bs->buf = buf;
+#define BS_PUT(n, val)      \
+if ((shift -= n) < 0)       \
+{                           \
+    cache |= val >> -shift; \
+    *buf++ = SWAP32(cache); \
+    shift += 32;            \
+    cache = 0;              \
+}                           \
+cache |= (uint32_t)val << shift;
+
 // Quantizer-dequantizer modes
 #define QDQ_MODE_INTRA_4   2       // intra 4x4
 #define QDQ_MODE_INTER     8       // inter
@@ -1204,18 +1217,6 @@ static void h264e_bs_init_bits_sse2(bs_t *bs, void *data)
     bs->shift = BS_BITS;
     bs->cache = 0;
 }
-
-#define BS_OPEN(bs) uint32_t cache = bs->cache; int shift = bs->shift; uint32_t *buf = bs->buf;
-#define BS_CLOSE(bs) bs->cache = cache; bs->shift = shift; bs->buf = buf;
-#define BS_PUT(n, val)      \
-if ((shift -= n) < 0)       \
-{                           \
-    cache |= val >> -shift; \
-    *buf++ = SWAP32(cache); \
-    shift += 32;            \
-    cache = 0;              \
-}                           \
-cache |= val << shift;
 
 static unsigned __clz_cavlc(unsigned v)
 {
@@ -5765,7 +5766,7 @@ static void deblock_chroma(uint8_t *pix, int stride, int alpha, int beta, int th
     if (strength < 4)
     {
         int tC = thr + 1;
-        delta = (((q0 - p0) << 2) + (p1 - q1) + 4) >> 3;
+        delta = (((q0 - p0)*4) + (p1 - q1) + 4) >> 3;
         delta = clip_range(tC, delta);
         pix[-1*stride] = byteclip_deblock(p0 + delta);
         pix[ 0*stride] = byteclip_deblock(q0 - delta);
@@ -5803,7 +5804,7 @@ static void deblock_luma_v(uint8_t *pix, int stride, int alpha, int beta, const 
                     q2 = pix[ 2];
                     ap = ABS(p2 - p0);
                     aq = ABS(q2 - q0);
-                    delta = (((q0 - p0) << 2) + (p1 - q1) + 4) >> 3;
+                    delta = (((q0 - p0)*4) + (p1 - q1) + 4) >> 3;
 
                     sp = (ap - beta) >> 31;
                     sq = (aq - beta) >> 31;
@@ -5947,7 +5948,7 @@ static void deblock_luma_h(uint8_t *pix, int stride, int alpha, int beta, const 
                     q2 = pix[ 2*stride];
                     ap = ABS(p2 - p0);
                     aq = ABS(q2 - q0);
-                    delta = (((q0 - p0) << 2) + (p1 - q1) + 4) >> 3;
+                    delta = (((q0 - p0)*4) + (p1 - q1) + 4) >> 3;
 
                     sp = (ap - beta) >> 31;
                     d2 = (((p2 + ((p0 + q0 + 1) >> 1)) >> 1) - p1) & sp;
@@ -6210,7 +6211,7 @@ static void h264e_intra_predict_16x16(pix_t *predict,  const pix_t *left, const 
     assert(IS_ALIGNED(top, 4));
     if (mode != 1)
     {
-        uint32_t t0,t1,t2,t3;
+        uint32_t t0, t1, t2, t3;
         if (mode < 1)
         {
             t0 = ((uint32_t*)top)[0];
@@ -6232,7 +6233,7 @@ static void h264e_intra_predict_16x16(pix_t *predict,  const pix_t *left, const 
     {
         do
         {
-            uint32_t val = *left++ * 0x01010101;
+            uint32_t val = *left++ * 0x01010101u;
             *d++ = val;
             *d++ = val;
             *d++ = val;
@@ -6265,8 +6266,8 @@ static void h264e_intra_predict_chroma(pix_t *predict, const pix_t *left, const 
     {
         do
         {
-            uint32_t u = left[0] * 0x01010101;
-            uint32_t v = left[8] * 0x01010101;
+            uint32_t u = left[0] * 0x01010101u;
+            uint32_t v = left[8] * 0x01010101u;
             d[0] = u;
             d[1] = u;
             d[2] = v;
@@ -7318,18 +7319,6 @@ static void h264e_bs_init_bits(bs_t *bs, void *data)
     bs->shift = BS_BITS;
     bs->cache = 0;
 }
-
-#define BS_OPEN(bs) uint32_t cache = bs->cache; int shift = bs->shift; uint32_t *buf = bs->buf;
-#define BS_CLOSE(bs) bs->cache = cache; bs->shift = shift; bs->buf = buf;
-#define BS_PUT(n, val)      \
-if ((shift -= n) < 0)       \
-{                           \
-    cache |= val >> -shift; \
-    *buf++ = SWAP32(cache); \
-    shift += 32;            \
-    cache = 0;              \
-}                           \
-cache |= val << shift;
 
 static void h264e_vlc_encode(bs_t *bs, int16_t *quant, int maxNumCoeff, uint8_t *nz_ctx)
 {
