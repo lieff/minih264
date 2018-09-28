@@ -4916,7 +4916,7 @@ static void hpel_lpf_diag_neon(const uint8_t *src, int src_stride, uint8_t *h264
     hpel_lpf_ver16_neon(scratch, dst, w, h);
 }
 
-static void average_16x16_unalign_neon(uint8_t* dst, const uint8_t* src, int src_stride)
+static void average_16x16_unalign_neon(uint8_t *dst, const uint8_t *src, int src_stride)
 {
     vst1q_u8(dst, vrhaddq_u8(vld1q_u8(dst), vld1q_u8(src)));  src += src_stride; dst += 16;
     vst1q_u8(dst, vrhaddq_u8(vld1q_u8(dst), vld1q_u8(src)));  src += src_stride; dst += 16;

@@ -9,6 +9,11 @@ arm-linux-gnueabihf-gcc -static -mcpu=cortex-a8 -mfpu=neon -mfloat-abi=hard \
 -DH264E_MAX_THREADS=4 -DH264E_SVC_API=1 -DNDEBUG \
 -o h264enc_arm_gcc minih264e_test.c system.c -lm -lpthread
 
+arm-linux-gnueabihf-gcc -static -mcpu=cortex-a8 -mfpu=neon -mfloat-abi=hard \
+-flto -O3 -std=gnu11 -ffast-math -fomit-frame-pointer -ftree-vectorize \
+-DH264E_MAX_THREADS=4 -DH264E_SVC_API=1 -DNDEBUG -DMINIH264_ASM \
+-o h264enc_arm_gcc_asm minih264e_test.c system.c asm/neon/*.s -lm -lpthread
+
 aarch64-linux-gnu-gcc -static \
 -Wall -Wextra \
 -flto -O3 -std=gnu11 -ffast-math -fomit-frame-pointer -ftree-vectorize \

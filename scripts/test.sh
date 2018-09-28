@@ -36,6 +36,14 @@ then
 fi
 rm out.264
 
+qemu-arm ./h264enc_arm_gcc_asm vectors/foreman.cif
+if ! cmp ./out.264 vectors/out_ref.264 >/dev/null 2>&1
+then
+    echo test failed
+    exit 1
+fi
+rm out.264
+
 qemu-aarch64 ./h264enc_arm64_gcc vectors/foreman.cif
 if ! cmp ./out.264 vectors/out_ref.264 >/dev/null 2>&1
 then
