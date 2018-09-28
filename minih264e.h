@@ -364,7 +364,10 @@ void H264E_set_vbv_state(
 
 #define H264E_CONFIGS_COUNT ((H264E_ENABLE_SSE2) + (H264E_ENABLE_PLAIN_C) + (H264E_ENABLE_NEON))
 
-#if defined(__linux__) || defined(__CYGWIN__)
+#if defined(__ARMCC_VERSION)
+#define __BYTE_ORDER 0
+#define __BIG_ENDIAN 1
+#elif defined(__linux__) || defined(__CYGWIN__)
 #include <endian.h>
 #elif defined(__APPLE__)
 #include <libkern/OSByteOrder.h>
@@ -381,9 +384,6 @@ void H264E_set_vbv_state(
 #error platform not supported
 #endif
 
-#if defined(__arm__) && defined(__ARMCC_VERSION)
-#include <armdsp.h>
-#endif
 #if defined(__aarch64__) && defined(__clang__)
 // uintptr_t broken with aarch64 clang on ubuntu 18
 #define uintptr_t unsigned long
