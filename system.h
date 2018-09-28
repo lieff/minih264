@@ -32,7 +32,7 @@ typedef pthread_mutex_t CRITICAL_SECTION, *PCRITICAL_SECTION, *LPCRITICAL_SECTIO
 
 typedef void * HANDLE;
 #define MAXIMUM_WAIT_OBJECTS 64
-#define INFINITE       (-1)
+#define INFINITE       (uint32_t)(-1)
 #define WAIT_FAILED    (-1)
 #define WAIT_TIMEOUT   0x102
 #define WAIT_OBJECT    0
@@ -96,7 +96,7 @@ bool event_destroy(HANDLE event);
 bool thread_close(HANDLE thread);
 void *thread_wait(HANDLE thread);
 bool thread_name(const char *name);
-bool thread_sleep(uint32_t milliseconds);
+void thread_sleep(uint32_t milliseconds);
 
 uint64_t GetTime();
 

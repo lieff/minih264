@@ -399,6 +399,7 @@ static inline unsigned int __usad8(unsigned int val1, unsigned int val2)
                       : "r" (val1), "r" (val2));
     return result;
 }
+
 static inline unsigned int __usada8(unsigned int val1, unsigned int val2, unsigned int val3)
 {
     unsigned int result;
@@ -5392,7 +5393,7 @@ static void FwdTransformResidual4x42_neon(const uint8_t *inp, const uint8_t *pre
 #endif
 }
 
-static void TransformResidual4x4_neon(int16_t *pDst, const int16_t *pSrc, const pix_t *pred, pix_t *out, int out_stride)
+static void TransformResidual4x4_neon(const int16_t *pSrc, const pix_t *pred, pix_t *out, int out_stride)
 {
     int16x4_t e0, e1, e2, e3;
     int16x4_t f0, f1, f2, f3;
@@ -5699,7 +5700,7 @@ static void h264e_transform_add_neon(pix_t *out, int out_stride, const pix_t *pr
                 *(uint32_t*)dst = *(uint32_t*)(pred + 3 * 16);
             } else
             {
-                TransformResidual4x4_neon(q->dq, q->dq, pred, out, out_stride);
+                TransformResidual4x4_neon(q->dq, pred, out, out_stride);
             }
             mask <<= 1;
             q++;
@@ -5712,6 +5713,8 @@ static void h264e_transform_add_neon(pix_t *out, int out_stride, const pix_t *pr
     } while (--crow);
 }
 #endif
+
+#if H264E_ENABLE_PLAIN_C
 
 static uint8_t byteclip_deblock(int x)
 {
@@ -6759,7 +6762,9 @@ static void h264e_copy_16x16(pix_t *d, int d_stride, const pix_t *s, int s_strid
         d += d_stride;
     } while(--cloop);
 }
+#endif /* H264E_ENABLE_PLAIN_C */
 
+#if H264E_ENABLE_PLAIN_C || (H264E_ENABLE_NEON && !defined(MINIH264_ASM))
 static void h264e_copy_borders(unsigned char *pic, int w, int h, int guard)
 {
     int r, rowbytes = w + 2*guard;
@@ -6767,7 +6772,7 @@ static void h264e_copy_borders(unsigned char *pic, int w, int h, int guard)
     for (r = 0; r < h; r++, d += rowbytes)
     {
         memset(d, d[guard], guard);
-        memset(d + rowbytes-guard, d[rowbytes - guard - 1], guard);
+        memset(d + rowbytes - guard, d[rowbytes - guard - 1], guard);
     }
     d = pic - guard - guard*rowbytes;
     for (r = 0; r < guard; r++)
@@ -6777,7 +6782,9 @@ static void h264e_copy_borders(unsigned char *pic, int w, int h, int guard)
         d += rowbytes;
     }
 }
+#endif /* H264E_ENABLE_PLAIN_C || (H264E_ENABLE_NEON && !defined(MINIH264_ASM)) */
 
+#if H264E_ENABLE_PLAIN_C
 #undef TRANSPOSE_BLOCK
 #define TRANSPOSE_BLOCK     1
 #define UNZIGSAG_IN_QUANT   0
@@ -6962,7 +6969,7 @@ static void FwdTransformResidual4x42(const uint8_t *inp, const uint8_t *pred,
 #endif
 }
 
-static void TransformResidual4x4(int16_t *pDst, const int16_t *pSrc)
+static void TransformResidual4x4(int16_t *pSrc)
 {
     int i;
     int16_t tmp[16];
@@ -7010,10 +7017,10 @@ static void TransformResidual4x4(int16_t *pDst, const int16_t *pSrc)
         int h1 = g1 + g2;
         int h2 = g1 - g2;
         int h3 = g0 - g3;
-        pDst[i + 0] = (int16_t)((h0 + 32) >> 6);
-        pDst[i + 4] = (int16_t)((h1 + 32) >> 6);
-        pDst[i + 8] = (int16_t)((h2 + 32) >> 6);
-        pDst[i + 12] = (int16_t)((h3 + 32) >> 6);
+        pSrc[i + 0] = (int16_t)((h0 + 32) >> 6);
+        pSrc[i + 4] = (int16_t)((h1 + 32) >> 6);
+        pSrc[i + 8] = (int16_t)((h2 + 32) >> 6);
+        pSrc[i + 12] = (int16_t)((h3 + 32) >> 6);
     }
 }
 
@@ -7188,7 +7195,7 @@ static void h264e_transform_add(pix_t *out, int out_stride, const pix_t *pred, q
             } else
             {
                 int i, j;
-                TransformResidual4x4(q->dq, q->dq);
+                TransformResidual4x4(q->dq);
                 for (j = 0; j < 4; j++)
                 {
                     for (i = 0; i < 4; i++)
@@ -7208,6 +7215,9 @@ static void h264e_transform_add(pix_t *out, int out_stride, const pix_t *pred, q
         pred += 4*(16 - ccol);
     } while (--crow);
 }
+#endif /* H264E_ENABLE_PLAIN_C */
+
+#if H264E_ENABLE_PLAIN_C || (H264E_ENABLE_NEON && !defined(MINIH264_ASM))
 
 #undef SWAP32
 #if __BYTE_ORDER == __BIG_ENDIAN
@@ -7216,8 +7226,6 @@ static void h264e_transform_add(pix_t *out, int out_stride, const pix_t *pred, q
 #   define SWAP32(x) (uint32_t)((((x) >> 24) & 0xFF) | (((x) >> 8) & 0xFF00) | (((x) << 8) & 0xFF0000) | ((x & 0xFF) << 24))
 #endif
 
-#define CODE8(val, len) (uint8_t)((val << 4) + len)
-#define CODE(val, len) (uint8_t)((val << 4) + (len - 1))
 #define BS_BITS 32
 
 static void h264e_bs_put_bits(bs_t *bs, unsigned n, unsigned val)
@@ -7553,7 +7561,9 @@ loop_enter:
     }
     BS_CLOSE(bs);
 }
+#endif /* H264E_ENABLE_PLAIN_C || (H264E_ENABLE_NEON && !defined(MINIH264_ASM)) */
 
+#if H264E_SVC_API
 static uint32_t udiv32(uint32_t n, uint32_t d)
 {
     uint32_t q = 0, r = n, N = 16;
@@ -7785,6 +7795,7 @@ static void h264e_intra_upsampling(int srcw, int srch, int dstw, int dsth, int i
         }
     }
 }
+#endif /* H264E_SVC_API */
 
 // Experimental code branch:
 // Rate-control takes into account that long-term references compresses worser than short-term
@@ -7845,24 +7856,24 @@ static void h264e_intra_upsampling(int srcw, int srch, int dstw, int dsth, int i
 #include "asm/minih264e_asm.h"
 #endif
 #if H264E_ENABLE_NEON && defined(MINIH264_ASM)
-#   define h264e_bs_put_bits_neon         h264e_bs_put_bits_arm11
-#   define h264e_bs_flush_neon            h264e_bs_flush_arm11
-#   define h264e_bs_get_pos_bits_neon     h264e_bs_get_pos_bits_arm11
-#   define h264e_bs_byte_align_neon       h264e_bs_byte_align_arm11
-#   define h264e_bs_put_golomb_neon       h264e_bs_put_golomb_arm11
-#   define h264e_bs_put_sgolomb_neon      h264e_bs_put_sgolomb_arm11
-#   define h264e_bs_init_bits_neon        h264e_bs_init_bits_arm11
-#   define h264e_vlc_encode_neon          h264e_vlc_encode_arm11
+#   define h264e_bs_put_bits_neon      h264e_bs_put_bits_arm11
+#   define h264e_bs_flush_neon         h264e_bs_flush_arm11
+#   define h264e_bs_get_pos_bits_neon  h264e_bs_get_pos_bits_arm11
+#   define h264e_bs_byte_align_neon    h264e_bs_byte_align_arm11
+#   define h264e_bs_put_golomb_neon    h264e_bs_put_golomb_arm11
+#   define h264e_bs_put_sgolomb_neon   h264e_bs_put_sgolomb_arm11
+#   define h264e_bs_init_bits_neon     h264e_bs_init_bits_arm11
+#   define h264e_vlc_encode_neon       h264e_vlc_encode_arm11
 #elif H264E_ENABLE_NEON
-#   define h264e_bs_put_bits_neon         h264e_bs_put_bits
-#   define h264e_bs_flush_neon            h264e_bs_flush
-#   define h264e_bs_get_pos_bits_neon     h264e_bs_get_pos_bits
-#   define h264e_bs_byte_align_neon       h264e_bs_byte_align
-#   define h264e_bs_put_golomb_neon       h264e_bs_put_golomb
-#   define h264e_bs_put_sgolomb_neon      h264e_bs_put_sgolomb
-#   define h264e_bs_init_bits_neon        h264e_bs_init_bits
-#   define h264e_vlc_encode_neon          h264e_vlc_encode
-#   define h264e_copy_borders_neon        h264e_copy_borders
+#   define h264e_bs_put_bits_neon      h264e_bs_put_bits
+#   define h264e_bs_flush_neon         h264e_bs_flush
+#   define h264e_bs_get_pos_bits_neon  h264e_bs_get_pos_bits
+#   define h264e_bs_byte_align_neon    h264e_bs_byte_align
+#   define h264e_bs_put_golomb_neon    h264e_bs_put_golomb
+#   define h264e_bs_put_sgolomb_neon   h264e_bs_put_sgolomb
+#   define h264e_bs_init_bits_neon     h264e_bs_init_bits
+#   define h264e_vlc_encode_neon       h264e_vlc_encode
+#   define h264e_copy_borders_neon     h264e_copy_borders
 #endif
 
 /************************************************************************/
@@ -8096,6 +8107,7 @@ static void init_vft(int enableNEON)
 #if H264E_ENABLE_PLAIN_C
     g_vft = &g_vft_plain_c;
 #endif
+    (void)enableNEON;
 #if H264E_ENABLE_NEON
     if (enableNEON)
         g_vft = &g_vft_neon;
@@ -9174,7 +9186,7 @@ static void mb_write(h264e_enc_t *enc, int enc_type, int base_mode)
 {
     int i, uv, mb_type, cbpc, cbpl, cbp;
     scratch_t *qv = enc->scratch;
-    //int base_mode = enc_type>0 ? 1:0;
+    //int base_mode = enc_type > 0 ? 1 : 0;
     int mb_type_svc = base_mode ? -2 : enc->mb.type;
     int intra16x16_flag = mb_type_svc >= 6;// && !base_mode;
     uint8_t nz[9];
@@ -9313,6 +9325,7 @@ l_skip:
             enc->mb.skip_run = 0;
         }
 
+        (void)enc_type;
 #if H264E_SVC_API
         if (enc->adaptive_base_mode_flag && enc_type > 0)
             U1(base_mode);
@@ -10340,6 +10353,7 @@ static void df_strength(deblock_filter_t *df, int mb_type, int mbx, uint8_t *str
       F G H I J
       K L K N O
     */
+    (void)IntraBLFlag;
 #if H264E_SVC_API
     if (IntraBLFlag & MB_FLAG_SVC_INTRA)
     {
@@ -10580,7 +10594,9 @@ static void mb_encode(h264e_enc_t *enc, int enc_type)
         interpolate_chroma(enc, mb_abs_mv(enc, enc->mb.mv[0]));
     }
 
+#if H264E_SVC_API
 _WRITE_MB:
+#endif
     mb_write(enc, enc_type, base_mode);
 
     if (!enc->speed.disable_deblock)
@@ -10989,8 +11005,9 @@ static int enc_alloc(h264e_enc_t *enc, const H264E_create_param_t *par, unsigned
     nref_frames += !!par->temporal_denoise_flag;
 #endif
     ALLOC(enc->ref.yuv[0], ((nmbx + 2) * (nmby + 2) * 384) * nref_frames);
+    (void)inp_buf_flag;
 #if H264E_SVC_API
-    if(inp_buf_flag)
+    if (inp_buf_flag)
     {
         ALLOC(enc->inp.yuv[0], ((nmbx)*(nmby)*384)); /* input buffer for base laeyr */
     }
@@ -11165,16 +11182,16 @@ static int H264E_init_one(h264e_enc_t *enc, const H264E_create_param_t *opt, int
 int H264E_init(h264e_enc_t *enc, const H264E_create_param_t *opt)
 {
     h264e_enc_t *enc_curr = enc;
-    int i;
-
-    H264E_init_one(enc_curr, opt, 0);
-
+    int i, ret;
     (void)i;
+
+    ret = H264E_init_one(enc_curr, opt, 0);
+
 #if H264E_SVC_API
     for (i = opt->num_layers; i > 1; i--)
     {
-        H264E_create_param_t opt_next =enc_curr->param;
-        int sizeof_persist,sizeof_scratch;
+        H264E_create_param_t opt_next = enc_curr->param;
+        int sizeof_persist = 0, sizeof_scratch = 0;
 
         opt_next.const_input_flag = 0;
         opt_next.temporal_denoise_flag = 0;
@@ -11188,10 +11205,12 @@ int H264E_init(h264e_enc_t *enc, const H264E_create_param_t *opt)
         H264E_sizeof_one(&enc_curr->param, &sizeof_persist, &sizeof_scratch, 1);
         enc_curr = enc_curr->enc_next = (char *)enc_curr + sizeof_persist;
 
-        H264E_init_one(enc_curr, &opt_next, 1);
+        ret = H264E_init_one(enc_curr, &opt_next, 1);
+        if (ret)
+            break;
     }
 #endif
-    return H264E_STATUS_SUCCESS;
+    return ret;
 }
 
 static void encode_slice(h264e_enc_t *enc, int frame_type, int long_term_idx_use, int long_term_idx_update, int pps_id, int enc_type)

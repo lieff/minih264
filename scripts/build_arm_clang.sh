@@ -11,6 +11,7 @@ clang -static -target arm-linux-gnueabihf -mcpu=cortex-a8 -mfpu=neon -mfloat-abi
 -o h264enc_arm_clang minih264e_test.c -lm
 
 clang -static -target aarch64-linux-gnu -mfpu=neon -mfloat-abi=hard \
+-Wall -Wextra \
 -O3 -std=gnu11 -ffast-math -fomit-frame-pointer -ftree-vectorize \
 -DH264E_MAX_THREADS=0 -DH264E_SVC_API=0 -DNDEBUG -D__NO_MATH_INLINES \
 -o h264enc_arm64_clang minih264e_test.c -lm

@@ -365,7 +365,7 @@ static void psnr_print(rd_t rd)
     printf("  \n");
 }
 
-static int pixel_of_chessboard(double x, double y, int w, int h)
+static int pixel_of_chessboard(double x, double y)
 {
 #if 0
     int mid = (fabs(x) < 4 && fabs(y) < 4);
@@ -407,7 +407,7 @@ static void gen_chessboard_rot(unsigned char *p, int w, int h, int frm)
         {
             x =  co*(c - hw) + si*(r - hh);
             y = -si*(c - hw) + co*(r - hh);
-            p[r*w + c] = pixel_of_chessboard(x, y, w, h);
+            p[r*w + c] = pixel_of_chessboard(x, y);
         }
     }
 }
@@ -497,25 +497,22 @@ int main(int argc, char *argv[])
         int sum_bytes = 0;
         int max_bytes = 0;
         int min_bytes = 10000000;
-        int sizeof_persist, sizeof_scratch, error;
+        int sizeof_persist = 0, sizeof_scratch = 0, error;
         H264E_persist_t *enc = NULL;
         H264E_scratch_t *scratch = NULL;
         if (cmdline->psnr)
             psnr_init();
 
         error = H264E_sizeof(&create_param, &sizeof_persist, &sizeof_scratch);
-        if (!error)
-        {
-            printf("sizeof_persist = %d sizeof_scratch = %d\n", sizeof_persist, sizeof_scratch);
-            enc     = (H264E_persist_t *)aligned_alloc(64, sizeof_persist);
-            scratch = (H264E_scratch_t *)aligned_alloc(64, sizeof_scratch);
-            error = H264E_init(enc, &create_param);
-        }
         if (error)
         {
             printf("H264E_init error = %d\n", error);
             return 0;
         }
+        printf("sizeof_persist = %d sizeof_scratch = %d\n", sizeof_persist, sizeof_scratch);
+        enc     = (H264E_persist_t *)aligned_alloc(64, sizeof_persist);
+        scratch = (H264E_scratch_t *)aligned_alloc(64, sizeof_scratch);
+        error = H264E_init(enc, &create_param);
 
         if (fin)
             fseek(fin, 0, SEEK_SET);
