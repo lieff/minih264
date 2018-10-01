@@ -475,6 +475,18 @@ typedef int int_u;
 #define IS_ALIGNED(p, n) (!((uintptr_t)(p) & (uintptr_t)((n) - 1)))
 
 // bit-stream
+#if __BYTE_ORDER == __BIG_ENDIAN
+#   define SWAP32(x) (uint32_t)(x)
+#else
+#ifdef _MSC_VER
+#   define SWAP32(x) _byteswap_ulong(x)
+#elif defined(__GNUC__) || defined(__clang__)
+#   define SWAP32(x) __builtin_bswap32(x)
+#else
+#   define SWAP32(x) (uint32_t)((((x) >> 24) & 0xFF) | (((x) >> 8) & 0xFF00) | (((x) << 8) & 0xFF0000) | ((x & 0xFF) << 24))
+#endif
+#endif
+
 #define BS_OPEN(bs) uint32_t cache = bs->cache; int shift = bs->shift; uint32_t *buf = bs->buf;
 #define BS_CLOSE(bs) bs->cache = cache; bs->shift = shift; bs->buf = buf;
 #define BS_PUT(n, val)      \
@@ -1126,7 +1138,6 @@ const uint8_t g_diff_to_gainQ8[256] =
 };
 
 #if H264E_ENABLE_SSE2 && !defined(MINIH264_ASM)
-#define SWAP32(x) (uint32_t)((((x) >> 24) & 0xFF) | (((x) >> 8) & 0xFF00) | (((x) << 8) & 0xFF0000) | ((x & 0xFF) << 24))
 #define BS_BITS 32
 
 static void h264e_bs_put_bits_sse2(bs_t *bs, unsigned n, unsigned val)
@@ -7219,19 +7230,6 @@ static void h264e_transform_add(pix_t *out, int out_stride, const pix_t *pred, q
 #endif /* H264E_ENABLE_PLAIN_C */
 
 #if H264E_ENABLE_PLAIN_C || (H264E_ENABLE_NEON && !defined(MINIH264_ASM))
-
-#undef SWAP32
-#if __BYTE_ORDER == __BIG_ENDIAN
-#   define SWAP32(x) (uint32_t)(x)
-#else
-#ifdef _MSC_VER
-#   define SWAP32(x) _byteswap_ulong(x)
-#elif defined(__GNUC__) || defined(__clang__)
-#   define SWAP32(x) __builtin_bswap32(x)
-#else
-#   define SWAP32(x) (uint32_t)((((x) >> 24) & 0xFF) | (((x) >> 8) & 0xFF00) | (((x) << 8) & 0xFF0000) | ((x & 0xFF) << 24))
-#endif
-#endif
 
 #define BS_BITS 32
 
