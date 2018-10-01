@@ -7224,7 +7224,13 @@ static void h264e_transform_add(pix_t *out, int out_stride, const pix_t *pred, q
 #if __BYTE_ORDER == __BIG_ENDIAN
 #   define SWAP32(x) (uint32_t)(x)
 #else
+#ifdef _MSC_VER
+#   define SWAP32(x) _byteswap_ulong(x)
+#elif defined(__GNUC__) || defined(__clang__)
+#   define SWAP32(x) __builtin_bswap32(x)
+#else
 #   define SWAP32(x) (uint32_t)((((x) >> 24) & 0xFF) | (((x) >> 8) & 0xFF00) | (((x) << 8) & 0xFF0000) | ((x & 0xFF) << 24))
+#endif
 #endif
 
 #define BS_BITS 32

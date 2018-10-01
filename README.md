@@ -16,7 +16,7 @@ Rough comparison with x264 on an i7-6700K:
 
 vs
 
-`./h264enc_x86 vectors/foreman.cif`
+`./h264enc_x64 vectors/foreman.cif`
 
 | x264         | minih264 |
 | ------------ | -------- |
