@@ -448,10 +448,12 @@ extern "C" {
 #else
 #   define h264e_restrict
 #endif
-#if defined(_MSC_VER) && _MSC_VER >= 1400
+#if defined(_MSC_VER)
 #   define ALIGN(n) __declspec(align(n))
+#   define ALIGN2(n)
 #else
 #   define ALIGN(n)
+#   define ALIGN2(n) __attribute__((aligned(n)))
 #endif
 
 #if __GNUC__ || __clang__
@@ -1253,7 +1255,7 @@ static void h264e_vlc_encode_sse2(bs_t *bs, int16_t *quant, int maxNumCoeff, uin
     unsigned zmask;
     BS_OPEN(bs)
 
-    ALIGN(16) int16_t zzquant[16];
+    ALIGN(16) int16_t zzquant[16] ALIGN2(16);
     levels = zzquant + ((maxNumCoeff == 4) ? 4 : 16);
     if (maxNumCoeff != 4)
     {
@@ -2355,7 +2357,7 @@ static __inline void copy_wh_sse(const uint8_t *src, int src_stride, uint8_t *h2
 
 static __inline void hpel_lpf_diag_sse(const uint8_t *src, int src_stride, uint8_t *h264e_restrict dst, int w, int h)
 {
-    ALIGN(16) int16_t scratch[21 * 16];  /* 21 rows by 16 pixels per row */
+    ALIGN(16) int16_t scratch[21 * 16] ALIGN2(16);  /* 21 rows by 16 pixels per row */
 
     /*
      * Intermediate values will be 1/2 pel at Horizontal direction
@@ -2626,7 +2628,7 @@ static void h264e_qpel_average_wh_align_sse2(const uint8_t *src0, const uint8_t 
 
 static void h264e_qpel_interpolate_luma_sse2(const uint8_t *src, int src_stride, uint8_t *h264e_restrict dst, point_t wh, point_t dxdy)
 {
-    ALIGN(16) uint8_t scratch[16*16];
+    ALIGN(16) uint8_t scratch[16*16] ALIGN2(16);
 //    src += ((dx + 1) >> 2) + ((dy + 1) >> 2)*src_stride;            // dx == 3 ? next row; dy == 3 ? next line
 //    dxdy              actions: Horizontal, Vertical, Diagonal, Average
 //    0 1 2 3 +1        -   ha    h    ha+
@@ -4916,7 +4918,7 @@ static void hpel_lpf_ver16_neon(const int16_t *src, uint8_t *h264e_restrict dst,
 
 static void hpel_lpf_diag_neon(const uint8_t *src, int src_stride, uint8_t *h264e_restrict dst, int w, int h)
 {
-    ALIGN(16) int16_t scratch[21 * 16];  /* 21 rows by 16 pixels per row */
+    ALIGN(16) int16_t scratch[21 * 16] ALIGN2(16);  /* 21 rows by 16 pixels per row */
 
     /*
      * Intermediate values will be 1/2 pel at Horizontal direction
@@ -4989,7 +4991,7 @@ static void h264e_qpel_interpolate_luma_neon(const uint8_t *src, int src_stride,
         copy_wh_neon(src, src_stride, dst, wh.s.x, wh.s.y);
     } else
     {
-        ALIGN(16) uint8_t scratch[16*16];
+        ALIGN(16) uint8_t scratch[16*16] ALIGN2(16);
         int dstused = 0;
         if (pos & 0xe0ee)// 1110 0000 1110 1110
         {
@@ -6537,7 +6539,7 @@ static void copy_wh(const uint8_t *src, int src_stride, uint8_t *dst, int w, int
 
 static void hpel_lpf_diag(const uint8_t *src, int src_stride, uint8_t *h264e_restrict dst, int w, int h)
 {
-    ALIGN(16) int16_t scratch[21 * 16];  /* 21 rows by 16 pixels per row */
+    ALIGN(16) int16_t scratch[21 * 16] ALIGN2(16);  /* 21 rows by 16 pixels per row */
 
     /*
      * Intermediate values will be 1/2 pel at Horizontal direction
@@ -6626,7 +6628,7 @@ void h264e_qpel_average_wh_align(const uint8_t *src0, const uint8_t *src1, uint8
 
 void h264e_qpel_interpolate_luma(const uint8_t *src, int src_stride, uint8_t *h264e_restrict dst, point_t wh, point_t dxdy)
 {
-    ALIGN(16) uint8_t scratch[16*16];
+    ALIGN(16) uint8_t scratch[16*16] ALIGN2(16);
     //  src += ((dx + 1) >> 2) + ((dy + 1) >> 2)*src_stride;            // dx == 3 ? next row; dy == 3 ? next line
     //  dxdy              actions: Horizontal, Vertical, Diagonal, Average
     //  0 1 2 3 +1        -   ha    h    ha+
