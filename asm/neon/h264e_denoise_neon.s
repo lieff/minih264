@@ -1,58 +1,31 @@
+        .arm
         .text
-        .align 2                
-memcpy_align3:                  
-        ldr             r12,    [r1,    #-3]!
-local_denoise_1_0:                       
-        mov             r3,     r12,    lsr #24
-        ldr             r12,    [r1,    #4]!
-        subs            r2,     r2,     #4
-        orr             r3,     r3,     r12,    lsl #32-24
-        str             r3,     [r0],   #4
-        bcs             local_denoise_1_0
-        b               _memcpy_lastbytes_skip3
-memcpy_align2:                  
-        ldr             r12,    [r1,    #-2]!
-local_denoise_1_1:                       
-        mov             r3,     r12,    lsr #16
-        ldr             r12,    [r1,    #4]!
-        subs            r2,     r2,     #4
-        orr             r3,     r3,     r12,    lsl #32-16
-        str             r3,     [r0],   #4
-        bcs             local_denoise_1_1
-        b               _memcpy_lastbytes_skip2
-memcpy_align1:                  
-        ldr             r12,    [r1,    #-1]!
-local_denoise_1_2:                       
-        mov             r3,     r12,    lsr #8
-        ldr             r12,    [r1,    #4]!
-        subs            r2,     r2,     #4
-        orr             r3,     r3,     r12,    lsl #32-8
-        str             r3,     [r0],   #4
-        bcs             local_denoise_1_2
-        b               _memcpy_lastbytes_skip1
-__rt_memcpy_w:                  
-        subs            r2,     r2,     #0x10-4 
-local_denoise_1_3:                       
+        .align 2
+
+__rt_memcpy_w:
+        subs            r2,     r2,     #0x10-4
+local_denoise_1_3:
         ldmcsia         r1!,    {r3,    r12}
         stmcsia         r0!,    {r3,    r12}
         ldmcsia         r1!,    {r3,    r12}
         stmcsia         r0!,    {r3,    r12}
         subcss          r2,     r2,     #0x10
         bcs             local_denoise_1_3
-        movs            r12,    r2,     lsl #29 
+        movs            r12,    r2,     lsl #29
         ldmcsia         r1!,    {r3,    r12}
         stmcsia         r0!,    {r3,    r12}
         ldrmi           r3,     [r1],   #4
         strmi           r3,     [r0],   #4
         moveq           pc,     lr
         sub             r1,     r1,     #3
-_memcpy_lastbytes_skip3:                        
+_memcpy_lastbytes_skip3:
         add             r1,     r1,     #1
-_memcpy_lastbytes_skip2:                        
+_memcpy_lastbytes_skip2:
         add             r1,     r1,     #1
-_memcpy_lastbytes_skip1:                        
+_memcpy_lastbytes_skip1:
         add             r1,     r1,     #1
-_memcpy_lastbytes:                      
+
+_memcpy_lastbytes:
         movs            r2,     r2,     lsl #31
         ldrmib          r2,     [r1],   #1
         ldrcsb          r3,     [r1],   #1
@@ -61,8 +34,8 @@ _memcpy_lastbytes:
         strcsb          r3,     [r0],   #1
         strcsb          r12,    [r0],   #1
         bx              lr
-my_memcpy:                      
-        cmp             r2,     #3  
+my_memcpy:
+        cmp             r2,     #3
         bls             _memcpy_lastbytes
         rsb             r12,    r0,     #0
         movs            r12,    r12,    lsl #31
@@ -74,25 +47,28 @@ my_memcpy:
         subcs           r2,     r2,     #2
         submi           r2,     r2,     #1
         strmib          r3,     [r0],   #1
-_memcpy_dest_aligned:                   
+_memcpy_dest_aligned:
         subs            r2,     r2,     #4
         bcc             _memcpy_lastbytes
         adr             r12,    __rt_memcpy_w
         and             r3,     r1,     #3
         sub             pc,     r12,    r3,     lsl #5
-h264e_denoise_run_neon:                 
+
+        .global h264e_denoise_run_neon
+        .type  h264e_denoise_run_neon, %function
+h264e_denoise_run_neon:
         CMP             r2,     #2
         CMPGT           r3,     #2
         BXLE            lr
         PUSH            {r0-r11,        lr}
         SUB             sp,     sp,     #0xc
-        SUB             r1,     r2,     #2 
-        SUB             r0,     r3,     #2 
+        SUB             r1,     r2,     #2
+        SUB             r0,     r3,     #2
         STR             r0,     [sp,    #0+4+4]
         LDR             r4,     [sp,    #0+4+4+4+4+4+4+4+4*9+4]
         LDR             r5,     [sp,    #0+4+4+4+4+4+4+4+4*9]
         STR             r1,     [sp,    #0+4+4+4+4+4]
-local_denoise_2_0:                       
+local_denoise_2_0:
         LDR             r0,     [sp,    #0+4+4+4]
         LDR             r1,     [sp,    #0+4+4+4+4]
         ADD             r0,     r0,     r5
@@ -104,9 +80,9 @@ local_denoise_2_0:
         STRB            r3,     [r12,   #0]
         ADD             r1,     r1,     #1
         LDR             r12,    [sp,    #0+4+4+4+4+4]
-        MOVS            r12,    r12,    lsr #3 
+        MOVS            r12,    r12,    lsr #3
         BEQ             local_denoise_10_0
-local_denoise_1_4:                       
+local_denoise_1_4:
         VLD1.U8         {d16},  [r0]
         VLD1.U8         {d17},  [r1]
         SUB             lr,     r0,     #1
@@ -208,11 +184,11 @@ local_denoise_1_4:
         ADD             r1,     r1,     #8
         SUBS            r12,    r12,    #1
         BNE             local_denoise_1_4
-local_denoise_10_0:                      
+local_denoise_10_0:
         LDR             r12,    [sp,    #0+4+4+4+4+4]
         ANDS            r12,    r12,    #7
         BNE             tail
-tail_ret:                       
+tail_ret:
         LDRB            r0,     [r0,    #0]
         SUB             r1,     r1,     r4
         STRB            r0,     [r1,    #0]
@@ -229,7 +205,7 @@ tail_ret:
         BL              my_memcpy
         LDR             r11,    [sp,    #0+4+4+4+4+4+4]
         SUB             r11,    r11,    #2
-local_denoise_1_5:                       
+local_denoise_1_5:
         LDR             r0,     [sp,    #0+4+4+4+4]
         SUB             r7,     r0,     r4
         LDR             r0,     [sp,    #0+4+4+4+4+4]
@@ -250,8 +226,8 @@ local_denoise_1_5:
         ADD             sp,     sp,     #0x1c
         POP             {r4-r11,        lr}
         B               my_memcpy
-tail:                   
-local_denoise_1_6:                       
+tail:
+local_denoise_1_6:
         LDRB            r3,     [r0,    #-1]
         LDRB            r9,     [r1,    #-1]
         LDRB            r6,     [r0,    #1]
@@ -296,5 +272,4 @@ local_denoise_1_6:
         SUBS            r12,    r12,    #1
         BNE             local_denoise_1_6
         B               tail_ret
-
-        .global         h264e_denoise_run_neon  
+        .size  h264e_denoise_run_neon, .-h264e_denoise_run_neon

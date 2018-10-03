@@ -1,6 +1,9 @@
+        .arm
         .text
-        .align 2                
-intra_predict_dc4:                      
+        .align 2
+
+        .type  intra_predict_dc4_neon, %function
+intra_predict_dc4_neon:
         MOV             r3,     #0
         VEOR            q1,     q1,     q1
         CMP             r0,     #0x20
@@ -8,13 +11,13 @@ intra_predict_dc4:
         VLD1.8          {d0},   [r0]
         ADD             r3,     r3,     #2
         VPADAL.U8               q1,     q0
-local_intra_10_0:                      
+local_intra_10_0:
         CMP             r1,     #0x20
         BCC             local_intra_10_1
         VLD1.8          {d0},   [r1]
         ADD             r3,     r3,     #2
         VPADAL.U8               q1,     q0
-local_intra_10_1:                      
+local_intra_10_1:
         VPADDL.U16              q1,     q1
         VMOV.32         r12,    d2[0]
         ADD             r0,     r12,    r3
@@ -26,7 +29,10 @@ local_intra_10_1:
         ADD             r0,     r0,     r0,     lsl #16
         ADD             r0,     r0,     r0,     lsl #8
         BX              lr
-h264e_intra_predict_16x16_neon:                 
+        .size  intra_predict_dc4_neon, .-intra_predict_dc4_neon
+
+        .type  h264e_intra_predict_16x16_neon, %function
+h264e_intra_predict_16x16_neon:
         CMP             r3,     #1
         BEQ             h_pred_16x16
         BLT             v_pred_16x16
@@ -37,13 +43,13 @@ h264e_intra_predict_16x16_neon:
         VLD1.8          {q2},   [r1]
         ADD             r3,     r3,     #8
         VPADAL.U8               q1,     q2
-local_intra_10_2:                      
+local_intra_10_2:
         CMP             r2,     #0x20
         BCC             local_intra_10_3
         VLD1.8          {q0},   [r2]
         ADD             r3,     r3,     #8
         VPADAL.U8               q1,     q0
-local_intra_10_3:                      
+local_intra_10_3:
         VPADDL.U16              q1,     q1
         VPADDL.U32              q1,     q1
         VADD.I64                d2,     d2,     d3
@@ -55,7 +61,7 @@ local_intra_10_3:
         CMP             r3,     #0
         MOVEQ           r2,     #0x80
         VDUP.I8         q0,     r2
-save_q0:                        
+save_q0:
         VMOV            q1,     q0
         VMOV            q2,     q0
         VMOV            q3,     q0
@@ -64,19 +70,22 @@ save_q0:
         VSTMIA          r0!,    {q0-q3}
         VSTMIA          r0!,    {q0-q3}
         BX              lr
-v_pred_16x16:                   
+v_pred_16x16:
         VLD1.8          {q0},   [r2]
         B               save_q0
-h_pred_16x16:                   
+h_pred_16x16:
         MOV             r2,     #16
-local_intra_1_0:                       
+local_intra_1_0:
         LDRB            r3,     [r1],   #1
         VDUP.I8         q0,     r3
         SUBS            r2,     r2,     #1
         VSTMIA          r0!,    {q0}
         BNE             local_intra_1_0
         BX              lr
-h264e_intra_predict_chroma_neon:                        
+        .size  h264e_intra_predict_16x16_neon, .-h264e_intra_predict_16x16_neon
+
+        .type  h264e_intra_predict_chroma_neon, %function
+h264e_intra_predict_chroma_neon:
         PUSH            {r4-r8, lr}
         MOV             r6,     r2
         CMP             r3,     #1
@@ -88,12 +97,12 @@ h264e_intra_predict_chroma_neon:
         MOVGT           r8,     r7
         BEQ             h_pred_chroma
         BGT             dc_pred_chroma
-v_pred_chroma:                  
+v_pred_chroma:
         SUBS            r0,     r0,     #1
         STMIA           r4!,    {r2,    r3,     r12,    lr}
         BNE             v_pred_chroma
         POP             {r4-r8, pc}
-h_pred_chroma:                  
+h_pred_chroma:
         LDRB            r12,    [r5,    #8]
         LDRB            r2,     [r5],   #1
         SUBS            r0,     r0,     #1
@@ -106,31 +115,31 @@ h_pred_chroma:
         STMIA           r4!,    {r2,    r3,     r12,    lr}
         BNE             h_pred_chroma
         POP             {r4-r8, pc}
-dc_pred_chroma:                 
+dc_pred_chroma:
         MOV             r1,     r6
         MOV             r0,     r5
-        BL              intra_predict_dc4
+        BL              intra_predict_dc4_neon
         STR             r0,     [r4,    #0x40]
         STR             r0,     [r4,    #4]
         STR             r0,     [r4,    #0]
         ADD             r1,     r6,     #4
         ADD             r0,     r5,     #4
-        BL              intra_predict_dc4
+        BL              intra_predict_dc4_neon
         CMP             r6,     #0x20
         STR             r0,     [r4,    #0x44]
         BCC             local_intra_10_4
         ADD             r1,     r6,     #4
         MOV             r0,     #0
-        BL              intra_predict_dc4
+        BL              intra_predict_dc4_neon
         STR             r0,     [r4,    #4]
-local_intra_10_4:                      
+local_intra_10_4:
         CMP             r5,     #0x20
         BCC             local_intra_11_0
         ADD             r1,     r5,     #4
         MOV             r0,     #0
-        BL              intra_predict_dc4
+        BL              intra_predict_dc4_neon
         STR             r0,     [r4,    #0x40]
-local_intra_11_0:                      
+local_intra_11_0:
         SUBS            r8,     r8,     #1
         ADD             r4,     r4,     #8
         ADD             r5,     r5,     #8
@@ -145,9 +154,9 @@ local_intra_11_0:
         STMIA           r4!,    {r0-r3}
         STMIA           r4!,    {r0-r3}
         POP             {r4-r8, pc}
-save_best:                      
+save_best:
         CMP             r1,     r10
-        MOVNE           r0,     r11 
+        MOVNE           r0,     r11
         MOVEQ           r0,     #0
         VABD.U8         q2,     q1,     q15
         VPADDL.U8               q2,     q2
@@ -163,7 +172,10 @@ save_best:
         STR             r1,     [sp,    #0+4+4+4]
         MOV             r9,     r0
         BX              lr
-h264e_intra_choose_4x4_neon:                    
+        .size  h264e_intra_predict_chroma_neon, .-h264e_intra_predict_chroma_neon
+
+        .type  h264e_intra_choose_4x4_neon, %function
+h264e_intra_choose_4x4_neon:
         PUSH            {r0-r11,        lr}
         SUB             sp,     sp,     #5*4
         LDR             r9,     [r0],   #0x10
@@ -181,7 +193,7 @@ h264e_intra_choose_4x4_neon:
         TST             r2,     #2
         SUBNE           r0,     r3,     #5
         MOVEQ           r0,     #0
-        BL              intra_predict_dc4
+        BL              intra_predict_dc4_neon
         VDUP.8          q1,     r0
         MOV             r1,     #2
         BL              save_best
@@ -198,7 +210,7 @@ h264e_intra_choose_4x4_neon:
         TST             r0,     #8
         BNE             local_intra_10_5
         VDUP.8          d1,     d1[0]
-local_intra_10_5:                      
+local_intra_10_5:
         VEXT.8          q1,     q0,     q0,     #5
         VMOV            q2,     q1
         VZIP.32         q1,     q2
@@ -228,8 +240,8 @@ local_intra_10_5:
         MOV             r1,     #7
         BL              save_best
         LDR             r0,     [sp,    #0+4+4+4+4+4+4+4]
-local_intra_10_6:                      
-not_avail_t:                    
+local_intra_10_6:
+not_avail_t:
         TST             r0,     #2
         BEQ             not_avail_l
         VREV32.8                q8,     q0
@@ -239,13 +251,13 @@ not_avail_t:
         VZIP.8          q1,     q8
         MOV             r1,     #1
         BL              save_best
-        VREV32.8                q2,     q0  
+        VREV32.8                q2,     q0
         VREV32.8                q1,     q0
         VREV32.8                q8,     q0
         VZIP.8          q8,     q1
         VMOV.U16                lr,     d16[3]
-        VMOV.16         d4[2],  lr  
-        VMOV.16         d17[0], lr  
+        VMOV.16         d4[2],  lr
+        VMOV.16         d17[0], lr
         VEXT.8          q9,     q2,     q2,     #14
         VHADD.U8                q10,    q9,     q2
         VZIP.8          q9,     q10
@@ -259,7 +271,7 @@ not_avail_t:
         MOV             r1,     #8
         BL              save_best
         LDR             r0,     [sp,    #0+4+4+4+4+4+4+4]
-not_avail_l:                    
+not_avail_l:
         AND             r0,     r0,     #7
         CMP             r0,     #7
         BNE             not_avail_diag
@@ -300,7 +312,7 @@ not_avail_l:
         VZIP.32         d3,     d22
         MOV             r1,     #5
         BL              save_best
-not_avail_diag:                 
+not_avail_diag:
         LDR             r0,     [sp,    #0+4+4+4]
         MOV             r3,     r9
         LDR             r4,     [sp,    #0+4+4+4+4+4+4]
@@ -313,6 +325,8 @@ not_avail_diag:
         ADD             sp,     sp,     #4*9
         ADD             r0,     r0,     r3,     lsl #4
         POP             {r4-r11,        pc}
+        .size  h264e_intra_choose_4x4_neon, .-h264e_intra_choose_4x4_neon
+
         .global         h264e_intra_predict_16x16_neon
         .global         h264e_intra_predict_chroma_neon
         .global         h264e_intra_choose_4x4_neon
