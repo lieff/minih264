@@ -214,7 +214,7 @@ typedef struct
     int h;
 } frame_size_descriptor_t;
 
-const frame_size_descriptor_t g_frame_size_descriptor[] =
+static const frame_size_descriptor_t g_frame_size_descriptor[] =
 {
     {"sqcif",  128,   96},
     { "qvga",  320,  240},

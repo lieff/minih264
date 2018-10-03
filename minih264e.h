@@ -6612,7 +6612,7 @@ static void average_16x16_unalign(uint8_t *dst, const uint8_t *src1, int src1_st
     }
 }
 
-void h264e_qpel_average_wh_align(const uint8_t *src0, const uint8_t *src1, uint8_t *h264e_restrict dst, point_t wh)
+static void h264e_qpel_average_wh_align(const uint8_t *src0, const uint8_t *src1, uint8_t *h264e_restrict dst, point_t wh)
 {
     int w = wh.s.x;
     int h = wh.s.y;
@@ -6626,7 +6626,7 @@ void h264e_qpel_average_wh_align(const uint8_t *src0, const uint8_t *src1, uint8
     }
 }
 
-void h264e_qpel_interpolate_luma(const uint8_t *src, int src_stride, uint8_t *h264e_restrict dst, point_t wh, point_t dxdy)
+static void h264e_qpel_interpolate_luma(const uint8_t *src, int src_stride, uint8_t *h264e_restrict dst, point_t wh, point_t dxdy)
 {
     ALIGN(16) uint8_t scratch[16*16] ALIGN2(16);
     //  src += ((dx + 1) >> 2) + ((dy + 1) >> 2)*src_stride;            // dx == 3 ? next row; dy == 3 ? next line
