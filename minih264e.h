@@ -376,10 +376,8 @@ void H264E_set_vbv_state(
 #elif defined(__OpenBSD__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined(__DragonFly__)
 #include <sys/endian.h>
 #elif defined(_WIN32)
-#include <winsock2.h>
-#include <sys/param.h>
-#define __BYTE_ORDER BYTE_ORDER
-#define __BIG_ENDIAN BIG_ENDIAN
+#define __BYTE_ORDER 0
+#define __BIG_ENDIAN 1
 #else
 #error platform not supported
 #endif

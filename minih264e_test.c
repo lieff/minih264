@@ -24,6 +24,13 @@ uint8_t *coded_data;
 FILE *fin, *fout;
 int sizeof_coded_data, frame_size, g_w, g_h, _qp;
 
+#ifdef _WIN32
+// only vs2017 have aligned_alloc
+#define ALIGNED_ALLOC(n, size) malloc(size)
+#else
+#define ALIGNED_ALLOC(n, size) aligned_alloc(n, size)
+#endif
+
 #if H264E_MAX_THREADS
 #include "system.h"
 typedef struct
@@ -481,8 +488,8 @@ int main(int argc, char *argv[])
 #endif
 
     frame_size = g_w*g_h*3/2;
-    buf_in   = (uint8_t*)aligned_alloc(64, frame_size);
-    buf_save = (uint8_t*)aligned_alloc(64, frame_size);
+    buf_in   = (uint8_t*)ALIGNED_ALLOC(64, frame_size);
+    buf_save = (uint8_t*)ALIGNED_ALLOC(64, frame_size);
 
     if (!buf_in || !buf_save)
     {
@@ -510,8 +517,8 @@ int main(int argc, char *argv[])
             return 0;
         }
         printf("sizeof_persist = %d sizeof_scratch = %d\n", sizeof_persist, sizeof_scratch);
-        enc     = (H264E_persist_t *)aligned_alloc(64, sizeof_persist);
-        scratch = (H264E_scratch_t *)aligned_alloc(64, sizeof_scratch);
+        enc     = (H264E_persist_t *)ALIGNED_ALLOC(64, sizeof_persist);
+        scratch = (H264E_scratch_t *)ALIGNED_ALLOC(64, sizeof_scratch);
         error = H264E_init(enc, &create_param);
 
         if (fin)
