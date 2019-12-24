@@ -7,17 +7,17 @@ pushd $CUR_DIR/..
 arm-linux-gnueabihf-gcc -static -flto -O3 -std=gnu11 -mcpu=cortex-a8 -mfpu=neon -mfloat-abi=hard -marm \
 -Wall -Wextra \
 -ffast-math -fno-stack-protector -fomit-frame-pointer -ffunction-sections -fdata-sections -Wl,--gc-sections -ftree-vectorize \
--DH264E_MAX_THREADS=4 -DH264E_SVC_API=1 -DNDEBUG \
+-DH264E_MAX_THREADS=4 -DH264E_SVC_API=1 -DNDEBUG -U_FORTIFY_SOURCE \
 -o h264enc_arm_gcc minih264e_test.c system.c -lm -lpthread
 
 arm-linux-gnueabihf-gcc -static -flto -O3 -std=gnu11 -mcpu=cortex-a8 -mfpu=neon -mfloat-abi=hard -marm \
 -Wall -Wextra \
 -ffast-math -fno-stack-protector -fomit-frame-pointer -ffunction-sections -fdata-sections -Wl,--gc-sections -ftree-vectorize \
--DH264E_MAX_THREADS=4 -DH264E_SVC_API=1 -DNDEBUG -DMINIH264_ASM \
+-DH264E_MAX_THREADS=4 -DH264E_SVC_API=1 -DNDEBUG -DMINIH264_ASM -U_FORTIFY_SOURCE \
 -o h264enc_arm_gcc_asm minih264e_test.c system.c asm/neon/*.s -lm -lpthread
 
 aarch64-linux-gnu-gcc -static -flto -O3 -std=gnu11 \
 -Wall -Wextra \
 -ffast-math -fno-stack-protector -fomit-frame-pointer -ffunction-sections -fdata-sections -Wl,--gc-sections -ftree-vectorize \
--DH264E_MAX_THREADS=4 -DH264E_SVC_API=1 -DNDEBUG \
+-DH264E_MAX_THREADS=4 -DH264E_SVC_API=1 -DNDEBUG -U_FORTIFY_SOURCE \
 -o h264enc_arm64_gcc minih264e_test.c system.c -lm -lpthread

@@ -28,7 +28,7 @@ int sizeof_coded_data, frame_size, g_w, g_h, _qp;
 // only vs2017 have aligned_alloc
 #define ALIGNED_ALLOC(n, size) malloc(size)
 #else
-#define ALIGNED_ALLOC(n, size) aligned_alloc(n, size)
+#define ALIGNED_ALLOC(n, size) aligned_alloc(n, (size + n - 1)/n*n)
 #endif
 
 #if H264E_MAX_THREADS

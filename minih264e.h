@@ -4947,7 +4947,7 @@ static void average_16x16_unalign_neon(uint8_t *dst, const uint8_t *src, int src
     vst1q_u8(dst, vrhaddq_u8(vld1q_u8(dst), vld1q_u8(src)));  src += src_stride; dst += 16;
 }
 
-static void h264e_qpel_average_wh_align_neon(const uint8_t *src0, const uint8_t *src1, uint8_t *h264e_restrict dst, point_t wh)
+static void h264e_qpel_average_wh_align_neon(const uint8_t *src0, const uint8_t *src1, uint8_t *dst, point_t wh)
 {
     int w = wh.s.x;
     int h = wh.s.y;
@@ -6610,7 +6610,7 @@ static void average_16x16_unalign(uint8_t *dst, const uint8_t *src1, int src1_st
     }
 }
 
-static void h264e_qpel_average_wh_align(const uint8_t *src0, const uint8_t *src1, uint8_t *h264e_restrict dst, point_t wh)
+static void h264e_qpel_average_wh_align(const uint8_t *src0, const uint8_t *src1, uint8_t *dst, point_t wh)
 {
     int w = wh.s.x;
     int h = wh.s.y;
