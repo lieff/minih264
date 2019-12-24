@@ -2,16 +2,20 @@ language: c
 addons:
   apt:
     packages:
+      - build-essential
       - libc6-dev-i386
       - linux-libc-dev:i386
       - gcc-arm-none-eabi
       - gcc-arm-linux-gnueabihf
       - libnewlib-arm-none-eabi
-      - gcc-4.8-multilib
-      - gcc-4.8-aarch64-linux-gnu
-      - gcc-4.8-powerpc-linux-gnu
+      - clang
+      - gcc-5-multilib
+      - gcc-arm-linux-gnueabihf
       - gcc-aarch64-linux-gnu
       - gcc-powerpc-linux-gnu
+      - gcc-5-arm-linux-gnueabihf
+      - gcc-5-aarch64-linux-gnu
+      - gcc-5-powerpc-linux-gnu
       - libc6-armhf-cross
       - libc6-arm64-cross
       - libc6-powerpc-cross
