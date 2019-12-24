@@ -1821,7 +1821,7 @@ static void h264e_deblock_luma_sse2(uint8_t *pix, int32_t stride, const deblock_
     b = beta[0];
     for (x = 0; x < 16; x += 4)
     {
-        int str = *(int*)&strength[x];
+        uint32_t str = *(uint32_t*)&strength[x];
         if ((uint8_t)str == 4)
         {
             deblock_luma_v_s4_sse(pix + x, stride, a, b);
@@ -1838,7 +1838,7 @@ static void h264e_deblock_luma_sse2(uint8_t *pix, int32_t stride, const deblock_
     b = beta[2];
     for (y = 0; y < 16; y += 4)
     {
-        int str = *(int*)&strength[y];
+        uint32_t str = *(uint32_t*)&strength[y];
         if ((uint8_t)str == 4)
         {
             deblock_luma_h_s4_sse(pix, stride, a, b);
@@ -4127,7 +4127,7 @@ static void h264e_deblock_luma_neon(uint8_t *pix, int32_t stride, const deblock_
     int x, y;
     for (x = 0; x < 16; x += 4)
     {
-        int str = *(int*)&strength[x];
+        uint32_t str = *(uint32_t*)&strength[x];
         if ((uint8_t)str == 4)
         {
             deblock_luma_v_s4_neon(pix + x, stride, a, b);
@@ -4144,7 +4144,7 @@ static void h264e_deblock_luma_neon(uint8_t *pix, int32_t stride, const deblock_
     strength += 16;
     for (y = 0; y < 16; y += 4)
     {
-        int str = *(int*)&strength[y];
+        uint32_t str = *(uint32_t*)&strength[y];
         if ((uint8_t)str == 4)
         {
             deblock_luma_h_s4_neon(pix, stride, a, b);
@@ -6053,7 +6053,7 @@ static void h264e_deblock_luma(uint8_t *pix, int32_t stride, const deblock_param
     int x, y;
     for (x = 0; x < 16; x += 4)
     {
-        int str = *(int*)&strength[x];
+        uint32_t str = *(uint32_t*)&strength[x];
         if ((uint8_t)str == 4)
         {
             deblock_luma_v_s4(pix + x, stride, a, b);
@@ -6070,7 +6070,7 @@ static void h264e_deblock_luma(uint8_t *pix, int32_t stride, const deblock_param
     strength += 16;
     for (y = 0; y < 16; y += 4)
     {
-        int str = *(int*)&strength[y];
+        uint32_t str = *(uint32_t*)&strength[y];
         if ((uint8_t)str == 4)
         {
             deblock_luma_h_s4(pix, stride, a, b);
@@ -9620,7 +9620,7 @@ static void intra_choose_4x4(h264e_enc_t *enc)
         edge[2] = block[3];
         edge[1] = block[3 + 16];
         edge[0] = block[3 + 16*2];
-        *(int*)&edge[-4] = *(int*)&block[16*3];
+        *(uint32_t*)&edge[-4] = *(uint32_t*)&block[16*3];
     }
     enc->scratch->nz_mask = (uint16_t)nz_mask;
 
@@ -10468,7 +10468,7 @@ static void mb_deblock(deblock_filter_t *df, int mb_type, int qp_this, int mbx, 
     for (;;)
     {
         const uint8_t *lut;
-        if (*((int*)strength))
+        if (*((uint32_t*)strength))
         {
             qp = (qp_left + qp_this + 1) >> 1;
             lut = g_a_tc0_b[-10 + qp + ALPHA_OFS];
@@ -10476,7 +10476,7 @@ static void mb_deblock(deblock_filter_t *df, int mb_type, int qp_this, int mbx, 
             beta[0]  = lut[4 + (BETA_OFS - ALPHA_OFS)*5];
             for (i = 0; i < 4; i++) tc0[i] = lut[strength[i]];
         }
-        if (*((int*)(strength + 16)))
+        if (*((uint32_t*)(strength + 16)))
         {
             qp = (qp_top + qp_this + 1) >> 1;
             lut = g_a_tc0_b[-10 + qp + ALPHA_OFS];
