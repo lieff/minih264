@@ -40,6 +40,8 @@ typedef void * HANDLE;
 #define WAIT_ABANDONED   128
 #define WAIT_ABANDONED_0 128
 
+#endif //_WIN32
+
 #ifdef __cplusplus
 extern "C" {
 #else
@@ -48,51 +50,30 @@ extern "C" {
 #endif
 #endif
 
-HANDLE event_create(bool manualReset
-#ifdef __cplusplus
-    = false
-#endif
-    , bool initialState
-#ifdef __cplusplus
-    = false
-#endif
-        );
+HANDLE event_create(bool manualReset, bool initialState);
+bool event_destroy(HANDLE event);
+
+#ifndef _WIN32
+#define SetEvent event_set
+#define ResetEvent event_reset
+#define WaitForSingleObject event_wait
+#define WaitForMultipleObjects event_wait_multiple
 bool event_set(HANDLE event);
 bool event_reset(HANDLE event);
-int event_wait(HANDLE event, uint32_t milliseconds
-#ifdef __cplusplus
-    = INFINITE
-#endif
-        );
-int event_wait_multiple(uint32_t count, const HANDLE *events, bool waitAll
-#ifdef __cplusplus
-    = false
-#endif
-    , uint32_t milliseconds
-#ifdef __cplusplus
-    = INFINITE
-#endif
-        );
-
+int event_wait(HANDLE event, uint32_t milliseconds);
+int event_wait_multiple(uint32_t count, const HANDLE *events, bool waitAll, uint32_t milliseconds);
 bool InitializeCriticalSection(LPCRITICAL_SECTION lpCriticalSection);
 bool DeleteCriticalSection(LPCRITICAL_SECTION lpCriticalSection);
 bool EnterCriticalSection(LPCRITICAL_SECTION lpCriticalSection);
 bool LeaveCriticalSection(LPCRITICAL_SECTION lpCriticalSection);
+#else
+#define event_set SetEvent
+#define event_reset ResetEvent
+#define event_wait WaitForSingleObject
+#define event_wait_multiple WaitForMultipleObjects
+#endif
 
 HANDLE thread_create(LPTHREAD_START_ROUTINE lpStartAddress, void *lpParameter);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif //_WIN32
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-bool event_destroy(HANDLE event);
-
 bool thread_close(HANDLE thread);
 void *thread_wait(HANDLE thread);
 bool thread_name(const char *name);

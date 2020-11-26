@@ -208,41 +208,6 @@ static bool WaitForMultipleEvents(Event **e, uint32_t count, uint32_t timeout, b
     return TRUE;
 }
 
-static bool SignalEvent(Event *e)
-{
-    if (pthread_mutex_lock(&e->mutex))
-        return FALSE;
-
-    Event *pMultipleCond = e->pMultipleCond;
-    e->signaled = TRUE;
-    if (pthread_cond_signal(&e->cond))
-        return FALSE;
-
-    if (pthread_mutex_unlock(&e->mutex))
-        return FALSE;
-
-    if (pMultipleCond && pMultipleCond != e)
-    {
-        if (pthread_mutex_lock(&pMultipleCond->mutex))
-            return FALSE;
-        if (pthread_cond_signal(&pMultipleCond->cond))
-            return FALSE;
-        if (pthread_mutex_unlock(&pMultipleCond->mutex))
-            return FALSE;
-    }
-    return TRUE;
-}
-
-static bool ResetEvent(Event *e)
-{
-    if (pthread_mutex_lock(&e->mutex))
-        return FALSE;
-    e->signaled = FALSE;
-    if (pthread_mutex_unlock(&e->mutex))
-        return FALSE;
-    return TRUE;
-}
-
 HANDLE event_create(bool manualReset, bool initialState)
 {
     Event *e = (Event *)malloc(sizeof(*e));
@@ -273,12 +238,39 @@ bool event_destroy(HANDLE event)
 
 bool event_set(HANDLE event)
 {
-    return SignalEvent((Event *)event);
+    Event *e = (Event *)event;
+    if (pthread_mutex_lock(&e->mutex))
+        return FALSE;
+
+    Event *pMultipleCond = e->pMultipleCond;
+    e->signaled = TRUE;
+    if (pthread_cond_signal(&e->cond))
+        return FALSE;
+
+    if (pthread_mutex_unlock(&e->mutex))
+        return FALSE;
+
+    if (pMultipleCond && pMultipleCond != e)
+    {
+        if (pthread_mutex_lock(&pMultipleCond->mutex))
+            return FALSE;
+        if (pthread_cond_signal(&pMultipleCond->cond))
+            return FALSE;
+        if (pthread_mutex_unlock(&pMultipleCond->mutex))
+            return FALSE;
+    }
+    return TRUE;
 }
 
 bool event_reset(HANDLE event)
 {
-    return ResetEvent((Event *)event);
+    Event *e = (Event *)event;
+    if (pthread_mutex_lock(&e->mutex))
+        return FALSE;
+    e->signaled = FALSE;
+    if (pthread_mutex_unlock(&e->mutex))
+        return FALSE;
+    return TRUE;
 }
 
 int event_wait(HANDLE event, uint32_t milliseconds)
@@ -404,6 +396,17 @@ void *thread_wait(HANDLE thread)
 
 #else  //_WIN32
 
+HANDLE thread_create(LPTHREAD_START_ROUTINE lpStartAddress, void *lpParameter)
+{
+    DWORD tid;
+    return CreateThread(0, 0, lpStartAddress, lpParameter, 0, &tid);
+}
+
+HANDLE event_create(bool manualReset, bool initialState)
+{
+    return CreateEvent(0, manualReset, initialState, 0);
+}
+
 bool event_destroy(HANDLE event)
 {
     CloseHandle(event);
@@ -416,9 +419,15 @@ bool thread_close(HANDLE thread)
     return TRUE;
 }
 
-bool thread_wait(HANDLE thread)
+void *thread_wait(HANDLE thread)
 {
-    return WaitForSingleObject(thread, INFINITE) == WAIT_OBJECT_0;
+    if (WaitForSingleObject(thread, INFINITE) == WAIT_OBJECT_0)
+    {
+        DWORD ExitCode;
+        GetExitCodeThread(thread, &ExitCode);
+        return (void *)(intptr_t)ExitCode;
+    }
+    return (void *)(intptr_t)-1;
 }
 
 #endif //_WIN32
@@ -426,6 +435,7 @@ bool thread_wait(HANDLE thread)
 bool thread_name(const char *name)
 {
 #ifdef _WIN32
+#ifdef _MSC_VER
     struct tagTHREADNAME_INFO
     {
         DWORD dwType;
@@ -440,6 +450,7 @@ bool thread_name(const char *name)
     __except(EXCEPTION_EXECUTE_HANDLER)
     {
     }
+#endif
     return TRUE;
 #elif defined(__linux) || defined(__linux__)
     return (0 == prctl(PR_SET_NAME, name, 0, 0, 0));
@@ -462,7 +473,8 @@ uint64_t GetTime()
 {
     uint64_t time;
 #ifdef _WIN32
-    QueryPerformanceCounter((LARGE_INTEGER*)&time);
+    GetSystemTimeAsFileTime((FILETIME*)&time);
+    time = time/10 - 11644473600000000;
 #elif defined(__APPLE__)
     time = GetAbsTimeInNanoseconds() / 1000u;
 #else
