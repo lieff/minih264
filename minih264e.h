@@ -364,7 +364,7 @@ void H264E_set_vbv_state(
 
 #define H264E_CONFIGS_COUNT ((H264E_ENABLE_SSE2) + (H264E_ENABLE_PLAIN_C) + (H264E_ENABLE_NEON))
 
-#if defined(__ARMCC_VERSION)
+#if defined(__ARMCC_VERSION) || defined(_WIN32) || defined(__EMSCRIPTEN__)
 #define __BYTE_ORDER 0
 #define __BIG_ENDIAN 1
 #elif defined(__linux__) || defined(__CYGWIN__)
@@ -375,9 +375,6 @@ void H264E_set_vbv_state(
 #define __BIG_ENDIAN BIG_ENDIAN
 #elif defined(__OpenBSD__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined(__DragonFly__)
 #include <sys/endian.h>
-#elif defined(_WIN32)
-#define __BYTE_ORDER 0
-#define __BIG_ENDIAN 1
 #else
 #error platform not supported
 #endif
