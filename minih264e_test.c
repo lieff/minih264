@@ -458,7 +458,6 @@ int main(int argc, char *argv[])
     create_param.enableNEON = 1;
 #if H264E_SVC_API
     create_param.num_layers = 1;
-    create_param.inter_layer_pred_flag = 1;
     create_param.inter_layer_pred_flag = 0;
 #endif
     create_param.gop = cmdline->gop;
@@ -472,9 +471,8 @@ int main(int argc, char *argv[])
     create_param.const_input_flag = cmdline->psnr ? 0 : 1;
     //create_param.vbv_overflow_empty_frame_flag = 1;
     //create_param.vbv_underflow_stuffing_flag = 1;
-    create_param.vbv_size_bytes = 100000/8;
+    create_param.vbv_size_bytes = cmdline->kbps*1000/8*2; // 2 seconds vbv buffer for quality, so rate control can allocate more bits for intra frame
     create_param.temporal_denoise_flag = cmdline->denoise;
-    //create_param.vbv_size_bytes = 1500000/8;
 
 #if H264E_MAX_THREADS
     void *thread_pool = NULL;
