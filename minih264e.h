@@ -8873,7 +8873,8 @@ static void encode_sps(h264e_enc_t *enc, int profile_idc)
 
     nal_start(enc, 0x67 | (profile_idc == SCALABLE_BASELINE)*8);
     U(8, profile_idc);  // profile, 66 = baseline
-    U(8, plim->constrains & ((profile_idc!= SCALABLE_BASELINE)*4));     // no constrains
+    // Emit unconstrained Scalable Baseline; AVC Baseline uses the level-specific flags.
+    U(8, profile_idc == SCALABLE_BASELINE ? 0 : plim->constrains);
     U(8, plim->level);
     //U(5, 0x1B);       // sps_id|log2_max_frame_num_minus4|pic_order_cnt_type
     //UE(0);  // sps_id 1
