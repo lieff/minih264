@@ -35,8 +35,8 @@ static void check_sps(int profile_idc, int width, int height,
 
 int main(void)
 {
-    check_sps(66, 320, 240, 0, 0xe0, 11);
-    check_sps(66, 160, 128, 30000, 0xf0, 10);
+    check_sps(66, 320, 240, 0, 0xc0, 11);
+    check_sps(66, 160, 128, 30000, 0xc0, 10);
     check_sps(83, 320, 240, 0, 0, 11);
     return 0;
 }

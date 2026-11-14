@@ -8845,22 +8845,22 @@ static void encode_sps(h264e_enc_t *enc, int profile_idc)
         uint32_t max_dpb;
     };
     static const struct limit_t limit [] = {
-        {10, 0xE0, 99,    175/5, 396},
-        {10, 0xF0, 99,    350/5, 396},
-        {11, 0xE0, 396,   500/5, 900},
-        {12, 0xE0, 396,   1000/5, 2376},
-        {13, 0xE0, 396,   2000/5, 2376},
-        {20, 0xE0, 396,   2000/5, 2376},
-        {21, 0xE0, 792,   4000/5, 4752},
-        {22, 0xE0, 1620,  4000/5, 8100},
-        {30, 0xE0, 1620,  10000/5, 8100},
-        {31, 0xE0, 3600,  14000/5, 18000},
-        {32, 0xE0, 5120,  20000/5, 20480},
-        {40, 0xE0, 8192,  25000/5, 32768},
-        {41, 0xE0, 8192,  62500/5, 32768},
-        {42, 0xE0, 8704,  62500/5, 34816},
-        {50, 0xE0, 22080, 135000/5, 110400},
-        {51, 0xE0, 36864, 240000/5, 184320}
+        {10, 0xC0, 99,    175/5, 396},
+        {10, 0xC0, 99,    350/5, 396},
+        {11, 0xC0, 396,   500/5, 900},
+        {12, 0xC0, 396,   1000/5, 2376},
+        {13, 0xC0, 396,   2000/5, 2376},
+        {20, 0xC0, 396,   2000/5, 2376},
+        {21, 0xC0, 792,   4000/5, 4752},
+        {22, 0xC0, 1620,  4000/5, 8100},
+        {30, 0xC0, 1620,  10000/5, 8100},
+        {31, 0xC0, 3600,  14000/5, 18000},
+        {32, 0xC0, 5120,  20000/5, 20480},
+        {40, 0xC0, 8192,  25000/5, 32768},
+        {41, 0xC0, 8192,  62500/5, 32768},
+        {42, 0xC0, 8704,  62500/5, 34816},
+        {50, 0xC0, 22080, 135000/5, 110400},
+        {51, 0xC0, 36864, 240000/5, 184320}
     };
     const struct limit_t *plim = limit;
 
@@ -8873,7 +8873,8 @@ static void encode_sps(h264e_enc_t *enc, int profile_idc)
 
     nal_start(enc, 0x67 | (profile_idc == SCALABLE_BASELINE)*8);
     U(8, profile_idc);  // profile, 66 = baseline
-    // Emit unconstrained Scalable Baseline; AVC Baseline uses the level-specific flags.
+    // Constrained Baseline: constraint_set0_flag (Baseline) + constraint_set1_flag (Main).
+    // Scalable Baseline keeps the constraint byte clear.
     U(8, profile_idc == SCALABLE_BASELINE ? 0 : plim->constrains);
     U(8, plim->level);
     //U(5, 0x1B);       // sps_id|log2_max_frame_num_minus4|pic_order_cnt_type
