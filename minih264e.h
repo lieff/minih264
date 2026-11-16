@@ -375,6 +375,14 @@ void H264E_set_vbv_state(
 #define __BIG_ENDIAN BIG_ENDIAN
 #elif defined(__OpenBSD__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined(__DragonFly__)
 #include <sys/endian.h>
+#elif defined(__BYTE_ORDER__) && defined(__ORDER_BIG_ENDIAN__)
+// Other GCC/Clang targets (e.g. bare-metal or RTOS toolchains): use compiler-provided byte order.
+#ifndef __BYTE_ORDER
+#define __BYTE_ORDER __BYTE_ORDER__
+#endif
+#ifndef __BIG_ENDIAN
+#define __BIG_ENDIAN __ORDER_BIG_ENDIAN__
+#endif
 #else
 #error platform not supported
 #endif
